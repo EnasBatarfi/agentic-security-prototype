@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message
+from .assistant import generate_reply
+
 
 
 @login_required
@@ -39,7 +41,9 @@ def chat(request, conversation_id):
             Message.objects.create(conversation=conv, role="user", content=user_text)
 
             # Dummy assistant reply for now
-            Message.objects.create(conversation=conv, role="assistant", content="OK, got it.")
+            assistant_text = generate_reply(user_text, conv)
+            Message.objects.create(conversation=conv, role="assistant", content=assistant_text)
+
 
         return redirect("chat", conversation_id=conv.id)
 
