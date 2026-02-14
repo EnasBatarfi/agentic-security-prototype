@@ -1,0 +1,21 @@
+<h1>Home</h1>
+<p>You are logged in as {{ request.user.username }}</p>
+
+<p><a href="{% url 'new_chat' %}">Start new chat</a></p>
+
+<h3>Your chats</h3>
+<ul>
+  {% for c in conversations %}
+    <li>
+      <a href="{% url 'chat' c.id %}">Chat {{ c.id }}</a>
+      ({{ c.created_at }})
+    </li>
+  {% empty %}
+    <li>No chats yet.</li>
+  {% endfor %}
+</ul>
+
+<form method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit">Logout</button>
+</form>

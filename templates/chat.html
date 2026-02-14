@@ -1,0 +1,19 @@
+<h1>Chat {{ conversation.id }}</h1>
+
+<p><a href="{% url 'home' %}">Home</a></p>
+
+<div>
+  {% for m in messages %}
+    <p><b>{{ m.role }}:</b> {{ m.content }}</p>
+  {% empty %}
+    <p>No messages yet.</p>
+  {% endfor %}
+</div>
+
+<hr>
+
+<form method="post">
+  {% csrf_token %}
+  <input name="message" placeholder="Type message..." style="width: 300px;" />
+  <button type="submit">Send</button>
+</form>
