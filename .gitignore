@@ -13,5 +13,8 @@ db.sqlite3
 .DS_Store
 Thumbs.db
 
-# Secrets if you add them later
+# Secrets
 .env
+
+# Data directory 
+appdata/

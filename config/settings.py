@@ -130,3 +130,6 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
+
+# Sandbox root 
+FILE_SANDBOX_ROOT = BASE_DIR / "appdata" / "users"

@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from core.views import home, signup, new_chat, chat
+from core.views import home, signup, new_chat, chat, fs_list_api, fs_write_api, fs_read_api, fs_page
 
 
 urlpatterns = [
@@ -30,5 +30,9 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("chat/new/", new_chat, name="new_chat"),
     path("chat/<int:conversation_id>/", chat, name="chat"),
+    path("api/fs/list/", fs_list_api, name="fs_list_api"),
+    path("api/fs/write/", fs_write_api, name="fs_write_api"),
+    path("api/fs/read/", fs_read_api, name="fs_read_api"),
+    path("fs/", fs_page, name="fs_page"),
 
 ]

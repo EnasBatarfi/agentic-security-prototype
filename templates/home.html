@@ -19,6 +19,8 @@
   <p><a href="/admin/" target="_blank">Go to admin logs</a></p>
 {% endif %}
 
+<p><a href="{% url 'fs_page' %}">Filesystem Test</a></p>
+
 
 <form method="post" action="{% url 'logout' %}">
   {% csrf_token %}

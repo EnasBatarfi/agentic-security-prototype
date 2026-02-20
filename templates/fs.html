@@ -1,0 +1,38 @@
+<h1>Filesystem Test</h1>
+<p><a href="{% url 'home' %}">Home</a></p>
+
+<hr>
+
+<h3>List</h3>
+
+{% if items is not None %}
+  <pre>{% for i in items %}{{ i }}{% if not forloop.last %}\n{% endif %}{% endfor %}</pre>
+{% endif %}
+
+<hr>
+
+<h3>Write</h3>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="write">
+  <p>Path: <input name="path" placeholder="note.txt"></p>
+  <p>Content:</p>
+  <p><textarea name="content" rows="6" cols="70"></textarea></p>
+  <button type="submit">Write file</button>
+</form>
+
+<hr>
+
+<h3>Read</h3>
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="read">
+  <p>Path: <input name="path" placeholder="note.txt"></p>
+  <button type="submit">Read file</button>
+</form>
+
+{% if result %}
+  <hr>
+  <h3>Result</h3>
+  <pre>{{ result }}</pre>
+{% endif %}
