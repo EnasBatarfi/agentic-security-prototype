@@ -5,9 +5,11 @@
 
 <h3>List</h3>
 
-{% if items is not None %}
-  <pre>{% for i in items %}{{ i }}{% if not forloop.last %}\n{% endif %}{% endfor %}</pre>
-{% endif %}
+  <pre>
+  {% for i in items %}
+  {{ i }}
+  {% endfor %}
+  </pre>
 
 <hr>
 
