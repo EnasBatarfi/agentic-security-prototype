@@ -79,6 +79,7 @@ def chat(request, conversation_id):
     msgs = conv.messages.order_by("created_at")
     return render(request, "chat.html", {"conversation": conv, "messages": msgs})
 
+# API
 # Show what files are in the user folder
 @login_required
 def fs_list_api(request):
