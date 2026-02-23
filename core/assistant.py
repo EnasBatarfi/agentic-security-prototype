@@ -7,7 +7,7 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, Tool
 from langchain_core.tools import tool
 
 # Local file-system helper functions (our shared business logic layer)
-from .fs_local import list_dir, read_file, write_file
+from .fs_local import list_tree, read_file, write_file
 
 # Permanent instruction for the assistant (always sent first)
 SYSTEM_PROMPT = (
@@ -41,7 +41,7 @@ def generate_reply(user_text: str, conversation) -> str:
     @tool
     def fs_list(path: str = "") -> str:
         """List files/folders in this user's sandbox at a relative path."""
-        return "\n".join(list_dir(user_id, path))
+        return "\n".join(list_tree(user_id, path))
 
     @tool
     def fs_read(path: str) -> str:

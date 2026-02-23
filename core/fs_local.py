@@ -6,12 +6,19 @@ def user_root(user_id: int) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     return root
 
-def list_dir(user_id: int, rel_path: str = "") -> list[str]:
+def list_tree(user_id: int, rel_path: str = "") -> list[str]:
     root = user_root(user_id)
-    target = root / rel_path if rel_path else root
-    if not target.exists():
+    base = (root / rel_path) if rel_path else root
+    if not base.exists():
         return []
-    return [p.name for p in target.iterdir()]
+
+    lines = []
+    for p in sorted(base.rglob("*")):
+        rel = p.relative_to(base)
+        indent = "  " * (len(rel.parts) - 1)
+        name = rel.parts[-1] + ("/" if p.is_dir() else "")
+        lines.append(f"{indent}{name}")
+    return lines
 
 def write_file(user_id: int, rel_path: str, content: str) -> None:
     root = user_root(user_id)

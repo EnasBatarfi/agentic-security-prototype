@@ -10,7 +10,7 @@ import logging
 # File system imports
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .fs_local import list_dir, read_file, write_file
+from .fs_local import list_tree, read_file, write_file
 
 
 # Add the logger so we can add admin audit
@@ -83,7 +83,7 @@ def chat(request, conversation_id):
 # Show what files are in the user folder
 @login_required
 def fs_list_api(request):
-    items = list_dir(request.user.id, "")
+    items = list_tree(request.user.id, "")
     return JsonResponse({"items": items})
 
 # Create or overwrite a file inside the user folder
@@ -141,5 +141,5 @@ def fs_page(request):
                 except FileNotFoundError:
                     result = "File not found"
 
-    items = list_dir(request.user.id, "")
+    items = list_tree(request.user.id, "")
     return render(request, "fs.html", {"result": result, "items": items})
