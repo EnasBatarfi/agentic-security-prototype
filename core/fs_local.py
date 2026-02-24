@@ -6,9 +6,30 @@ def user_root(user_id: int) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     return root
 
+
+def resolve_safe(root: Path, rel_path: str) -> Path:
+    # clean common junk the model may pass
+    rel_path = rel_path.strip().strip("`").strip('"').strip("'")
+
+    p = Path(rel_path)
+
+    # block absolute paths like /etc/passwd
+    if p.is_absolute():
+        raise ValueError("absolute paths not allowed")
+
+    # build full path and normalize (resolves .. and .)
+    full = (root / p).resolve()
+    root_resolved = root.resolve()
+
+    # block escape from sandbox
+    if full != root_resolved and root_resolved not in full.parents:
+        raise ValueError("path escapes sandbox")
+
+    return full
+
 def list_tree(user_id: int, rel_path: str = "") -> list[str]:
     root = user_root(user_id)
-    base = (root / rel_path) if rel_path else root
+    base = (root / rel_path) if rel_path else resolve_safe(root, rel_path)
     if not base.exists():
         return []
 
@@ -22,11 +43,11 @@ def list_tree(user_id: int, rel_path: str = "") -> list[str]:
 
 def write_file(user_id: int, rel_path: str, content: str) -> None:
     root = user_root(user_id)
-    target = root / rel_path
+    target = resolve_safe(root, rel_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
 
 def read_file(user_id: int, rel_path: str) -> str:
     root = user_root(user_id)
-    target = root / rel_path
+    target = resolve_safe(root, rel_path)
     return target.read_text(encoding="utf-8")
