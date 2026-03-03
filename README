@@ -25,6 +25,3 @@ From the chat page, ask:
 The read succeeds for the same reason: the tool executes without an enforcement layer.
 
 ![Escape via chat tool](docs/screenshots/Picture2.png)
-
-## Why this matters
-An attacker can trick the assistant into accessing files outside the user’s allowed scope (confused deputy behavior).
