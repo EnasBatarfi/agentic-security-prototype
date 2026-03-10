@@ -6,10 +6,31 @@ def user_root(user_id: int) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     return root
 
+def clean_rel_path(rel_path: str) -> str:
+    if rel_path is None:
+        raise ValueError("empty path not allowed")
+
+    rel_path = rel_path.strip()
+    rel_path = rel_path.strip("`").strip('"').strip("'")
+    rel_path = rel_path.strip()
+
+    if rel_path == "":
+        raise ValueError("empty path not allowed")
+
+    if "\x00" in rel_path:
+        raise ValueError("null bytes not allowed")
+    
+    if rel_path.startswith("~"):
+        raise ValueError("tilde paths not allowed")
+
+    if "\\" in rel_path:
+        raise ValueError("backslashes not allowed")
+
+    return rel_path
 
 def resolve_safe(root: Path, rel_path: str) -> Path:
     # clean common junk the model may pass
-    rel_path = rel_path.strip().strip("`").strip('"').strip("'")
+    rel_path = clean_rel_path(rel_path)
 
     p = Path(rel_path)
 
@@ -29,7 +50,7 @@ def resolve_safe(root: Path, rel_path: str) -> Path:
 
 def list_tree(user_id: int, rel_path: str = "") -> list[str]:
     root = user_root(user_id)
-    base = (root / rel_path) if rel_path else resolve_safe(root, rel_path)
+    base = root if rel_path == "" else resolve_safe(root, rel_path)
     if not base.exists():
         return []
 

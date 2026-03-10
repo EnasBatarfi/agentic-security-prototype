@@ -16,6 +16,14 @@ from .fs_local import list_tree, read_file, write_file
 # Add the logger so we can add admin audit
 logger = logging.getLogger(__name__)
 
+def fs_error_message(exc: Exception) -> str:
+    if isinstance(exc, ValueError):
+        return str(exc)
+    if isinstance(exc, FileNotFoundError):
+        return "file not found"
+    if isinstance(exc, IsADirectoryError):
+        return "path points to a directory, not a file"
+    return "filesystem operation failed"
 
 @login_required
 def home(request):
@@ -90,27 +98,28 @@ def fs_list_api(request):
 @require_POST
 @login_required
 def fs_write_api(request):
-    path = (request.POST.get("path") or "").strip()
+    path = request.POST.get("path") or ""
     content = request.POST.get("content") or ""
-    if not path:
-        return JsonResponse({"error": "missing path"}, status=400)
 
-    write_file(request.user.id, path, content)
-    return JsonResponse({"ok": True})
+    try:
+        write_file(request.user.id, path, content)
+        return JsonResponse({"ok": True})
+    except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
+        return JsonResponse({"ok": False, "error": fs_error_message(e)}, status=400)
 
 # Read a text file from the user folder
 @require_POST
 @login_required
 def fs_read_api(request):
-    path = (request.POST.get("path") or "").strip()
-    if not path:
-        return JsonResponse({"error": "missing path"}, status=400)
+    path = request.POST.get("path") or ""
 
     try:
         content = read_file(request.user.id, path)
         return JsonResponse({"ok": True, "content": content})
     except FileNotFoundError:
-        return JsonResponse({"ok": False, "error": "not found"}, status=404)
+        return JsonResponse({"ok": False, "error": "file not found"}, status=404)
+    except (ValueError, IsADirectoryError, OSError) as e:
+        return JsonResponse({"ok": False, "error": fs_error_message(e)}, status=400)
 
 
 # UI FS for testing 
@@ -123,23 +132,24 @@ def fs_page(request):
         action = request.POST.get("action")
 
         if action == "write":
-            path = (request.POST.get("path") or "").strip()
+            path = request.POST.get("path") or ""
             content = request.POST.get("content") or ""
-            if not path:
-                result = "Missing path"
-            else:
+            try:
                 write_file(request.user.id, path, content)
                 result = f"Wrote: {path}"
+            except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
+                result = fs_error_message(e)
 
         elif action == "read":
-            path = (request.POST.get("path") or "").strip()
-            if not path:
-                result = "Missing path"
-            else:
-                try:
-                    result = read_file(request.user.id, path)
-                except FileNotFoundError:
-                    result = "File not found"
+            path = request.POST.get("path") or ""
+            try:
+                result = read_file(request.user.id, path)
+            except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
+                result = fs_error_message(e)
 
-    items = list_tree(request.user.id, "")
+    try:
+        items = list_tree(request.user.id, "")
+    except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
+        items = [f"Error: {fs_error_message(e)}"]
+
     return render(request, "fs.html", {"result": result, "items": items})
