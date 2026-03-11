@@ -8,6 +8,7 @@ from langchain_core.tools import tool
 
 # Local file-system helper functions (our shared business logic layer)
 from .fs_local import list_tree, read_file, write_file
+from .fs_mcp import list_tree_mcp, read_file_mcp, write_file_mcp
 
 # Permanent instruction for the assistant (always sent first)
 SYSTEM_PROMPT = (
@@ -41,13 +42,13 @@ def generate_reply(user_text: str, conversation) -> str:
     @tool
     def fs_list(path: str = "") -> str:
         """List files/folders in this user's sandbox at a relative path."""
-        return "\n".join(list_tree(user_id, path))
+        return "\n".join(list_tree_mcp(user_id, path))
 
     @tool
     def fs_read(path: str) -> str:
         """Read one text file from this user's sandbox."""
         try:
-            return read_file(user_id, path)
+            return read_file_mcp(user_id, path)
         except FileNotFoundError:
             # Return a clean tool error string (instead of crashing the run)
             return "ERROR: file not found"
@@ -55,7 +56,7 @@ def generate_reply(user_text: str, conversation) -> str:
     @tool
     def fs_write(path: str, content: str) -> str:
         """Create or overwrite a text file in this user's sandbox."""
-        write_file(user_id, path, content)
+        write_file_mcp(user_id, path, content)
         return f"OK: wrote {path}"
 
     # Register available tools and attach them to the model
