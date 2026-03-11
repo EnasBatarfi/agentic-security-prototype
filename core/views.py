@@ -11,6 +11,7 @@ import logging
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .fs_local import list_tree, read_file, write_file
+from .fs_mcp import list_tree_mcp, read_file_mcp, write_file_mcp
 
 
 # Add the logger so we can add admin audit
@@ -91,7 +92,7 @@ def chat(request, conversation_id):
 # Show what files are in the user folder
 @login_required
 def fs_list_api(request):
-    items = list_tree(request.user.id, "")
+    items = list_tree_mcp(request.user.id, "")
     return JsonResponse({"items": items})
 
 # Create or overwrite a file inside the user folder
@@ -102,7 +103,7 @@ def fs_write_api(request):
     content = request.POST.get("content") or ""
 
     try:
-        write_file(request.user.id, path, content)
+        write_file_mcp(request.user.id, path, content)
         return JsonResponse({"ok": True})
     except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
         return JsonResponse({"ok": False, "error": fs_error_message(e)}, status=400)
@@ -114,7 +115,7 @@ def fs_read_api(request):
     path = request.POST.get("path") or ""
 
     try:
-        content = read_file(request.user.id, path)
+        content = read_file_mcp(request.user.id, path)
         return JsonResponse({"ok": True, "content": content})
     except FileNotFoundError:
         return JsonResponse({"ok": False, "error": "file not found"}, status=404)
@@ -135,7 +136,7 @@ def fs_page(request):
             path = request.POST.get("path") or ""
             content = request.POST.get("content") or ""
             try:
-                write_file(request.user.id, path, content)
+                write_file_mcp(request.user.id, path, content)
                 result = f"Wrote: {path}"
             except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
                 result = fs_error_message(e)
@@ -143,12 +144,12 @@ def fs_page(request):
         elif action == "read":
             path = request.POST.get("path") or ""
             try:
-                result = read_file(request.user.id, path)
+                result = read_file_mcp(request.user.id, path)
             except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
                 result = fs_error_message(e)
 
     try:
-        items = list_tree(request.user.id, "")
+        items = list_tree_mcp(request.user.id, "")
     except (ValueError, FileNotFoundError, IsADirectoryError, OSError) as e:
         items = [f"Error: {fs_error_message(e)}"]
 
