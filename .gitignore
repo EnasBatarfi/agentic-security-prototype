@@ -1,20 +1,18 @@
-# venv
-.venv/
-
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
 
-# Django
+# Virtual environment
+.venv/
+
+# Django local files
 db.sqlite3
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
+media/
+staticfiles/
 
 # Secrets
 .env
 
-# Data directory 
-appdata/
+# macOS
+.DS_Store
