@@ -9,7 +9,7 @@ langchain-core>=1.2
 langchain-openai>=1.1
 langchain-ollama>=1.0
 
-fastmcp>=2.0
+mcp>=1.0
 
 pytest>=8.0
 pytest-django>=4.9

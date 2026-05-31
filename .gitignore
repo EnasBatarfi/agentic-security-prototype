@@ -8,8 +8,10 @@ __pycache__/
 
 # Django local files
 db.sqlite3
-media/
 staticfiles/
+
+# Local files
+uploads/
 
 # Secrets
 .env
