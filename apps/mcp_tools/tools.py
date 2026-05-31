@@ -44,6 +44,11 @@ def delete_file(path: str) -> str:
     # Ensure the "_deleted" folder exists
     call_mcp_tool("create_directory",{"path": str(deleted_root)},)
 
+    source = Path(mcp_path(path))
+
+    if not source.exists():
+            return f"Could not delete {path}, file could not be found."
+
     destination = deleted_root / f"{uuid4().hex}_{Path(path).name}"
     # Move the file to the "_deleted" folder in the MCP filesystem
     call_mcp_tool("move_file",{"source": mcp_path(path),"destination": str(destination),},)
