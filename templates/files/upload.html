@@ -8,4 +8,17 @@
     {{ form.as_p }}
     <button type="submit">Upload</button>
   </form>
+
+  <script>
+    const fileInput = document.getElementById("id_file");
+    const titleInput = document.getElementById("id_title");
+
+    if (fileInput && titleInput) {
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files.length > 0 && titleInput.value.trim() === "") {
+          titleInput.value = fileInput.files[0].name;
+        }
+      });
+    }
+  </script>
 {% endblock %}

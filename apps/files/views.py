@@ -27,6 +27,10 @@ def file_upload(request):
         if form.is_valid():
             uploaded_file = form.save(commit=False)
             uploaded_file.owner = request.user
+            # If the user didn't provide a title, use the file name
+            if not uploaded_file.title:
+                uploaded_file.title = request.FILES["file"].name
+            
             uploaded_file.save()
             return redirect("file_list")
     # If the request is get show the upload form
