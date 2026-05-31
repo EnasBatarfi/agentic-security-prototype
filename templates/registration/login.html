@@ -3,14 +3,50 @@
 {% block content %}
   <h1>Login</h1>
 
-  <form method="post">
+  <form method="post" novalidate id="login-form">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <p>
+      <label for="{{ form.username.id_for_label }}">
+        Username <span class="required-star">*</span>
+      </label>
+      {{ form.username }}
+      {{ form.username.errors }}
+    </p>
+
+    <p>
+      <label for="{{ form.password.id_for_label }}">
+        Password <span class="required-star">*</span>
+      </label>
+      {{ form.password }}
+      {{ form.password.errors }}
+      {{ form.non_field_errors }}
+    </p>
+
     <button type="submit">Login</button>
   </form>
 
-  <p>
-    New user?
-    <a href="{% url 'signup' %}">Sign up</a>
-  </p>
+  <style>
+    .required-star {
+      color: red;
+      font-weight: bold;
+    }
+
+    .errorlist {
+      color: red;
+      margin: 4px 0 0 0;
+      padding-left: 18px;
+    }
+  </style>
+  
+  <script>
+    const loginForm = document.getElementById("login-form");
+    const usernameInput = document.getElementById("id_username");
+
+    if (loginForm && usernameInput) {
+      loginForm.addEventListener("submit", function () {
+        usernameInput.value = usernameInput.value.trim().toLowerCase();
+      });
+    }
+  </script>
 {% endblock %}
