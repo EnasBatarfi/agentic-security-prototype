@@ -15,6 +15,7 @@
         <th>Path</th>
         <th>Owner</th>
         <th>Uploaded</th>
+        <th>Actions</th>
       </tr>
 
       {% for file in files %}
@@ -24,6 +25,12 @@
           <td>{{ file.file.name }}</td>
           <td>{{ file.owner.username }}</td>
           <td>{{ file.created_at }}</td>
+          <td>
+            <form method="post" action="{% url 'file_delete' file.id %}">
+              {% csrf_token %}
+              <button type="submit">Delete</button>
+            </form>
+          </td>
         </tr>
       {% endfor %}
     </table>

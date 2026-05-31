@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 
 from .forms import UploadedFileForm
 from .models import UploadedFile
+from apps.mcp_tools.tools import delete_file as mcp_delete_file
 
 
 @login_required
@@ -33,3 +34,19 @@ def file_upload(request):
         form = UploadedFileForm()
 
     return render(request, "files/upload.html", {"form": form})
+
+@login_required
+def file_delete(request, file_id):
+    """Delete a file from the UI using the same MCP delete tool."""
+
+    # If the request is a POST the user wants to delete the file
+    if request.method == "POST":
+        uploaded_file = get_object_or_404(
+            UploadedFile,
+            id=file_id,
+            owner=request.user,
+        )
+
+        mcp_delete_file(uploaded_file.file.name)
+
+    return redirect("file_list")

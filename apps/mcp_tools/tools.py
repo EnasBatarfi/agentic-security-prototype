@@ -1,5 +1,6 @@
 from pathlib import Path
 from uuid import uuid4
+import json
 
 from django.conf import settings
 from langchain_core.tools import tool
@@ -21,9 +22,10 @@ def list_files(path: str = "") -> str:
 
 def search_files(query: str) -> str:
     """Search files through the external MCP filesystem server."""
+    pattern = "*".join(query.strip().split())
 
     # Search for files matching the query pattern in the entire MCP filesystem
-    return call_mcp_tool("search_files",{"path": mcp_path(""),"pattern": query,},)
+    return call_mcp_tool("search_files",{"path": mcp_path(""),"pattern": f"**/*{pattern}*",},)
 
 
 def read_file(path: str) -> str:
@@ -46,8 +48,8 @@ def delete_file(path: str) -> str:
     # Move the file to the "_deleted" folder in the MCP filesystem
     call_mcp_tool("move_file",{"source": mcp_path(path),"destination": str(destination),},)
 
-    # Also delete the corresponding UploadedFile record in the Django database
-    UploadedFile.objects.filter(file=path).delete()
+    # Also delete the file from the Django database so it doesn't show up in the UI
+    UploadedFile.objects.filter(file=str(path).replace(str(settings.MCP_FILESYSTEM_ROOT) + "/", "").lstrip("/")).delete()
 
     return f"Deleted {path}"
 
