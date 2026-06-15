@@ -40,10 +40,14 @@ def search_files_impl(query: str) -> str:
     """
     Search files and folders by name.
     """
-    pattern = "*".join(query.strip().split())
+    words = query.lower().strip().split()
 
     matches = sorted(
-        MCP_ROOT.rglob(f"*{pattern}*"),
+        (
+            path
+            for path in MCP_ROOT.rglob("*")
+            if all(word in path.name.lower() for word in words)
+        ),
         key=lambda item: item.as_posix(),
     )
 
