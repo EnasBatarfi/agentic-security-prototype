@@ -8,14 +8,12 @@ run as a separate process or service.
 
 from mcp.server.fastmcp import FastMCP
 
-from .file_tools import list_files_impl
+from .file_tools import list_files_impl, read_file_impl, delete_file_impl, search_files_impl
 
 
 mcp = FastMCP("Agentic SecurityCustom MCP Server")
 
 
-# Current implementation note:
-# For now, only the list_files tool is here for testng but other tools can be moved here later
 
 @mcp.tool()
 def list_files(path: str = "") -> str:
@@ -23,6 +21,29 @@ def list_files(path: str = "") -> str:
     List files and folders using the custom MCP server.
     """
     return list_files_impl(path)
+
+@mcp.tool()
+def search_files(query: str) -> str:
+    """
+    Search files and folders using the custom MCP server.
+    """
+    return search_files_impl(query)
+
+
+@mcp.tool()
+def read_file(path: str) -> str:
+    """
+    Read a file using the custom MCP server.
+    """
+    return read_file_impl(path)
+
+
+@mcp.tool()
+def delete_file(path: str) -> str:
+    """
+    Delete a file using the custom MCP server.
+    """
+    return delete_file_impl(path)
 
 
 if __name__ == "__main__":

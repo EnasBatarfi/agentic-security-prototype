@@ -10,7 +10,7 @@ from apps.files.models import UploadedFile
 from .client import call_mcp_tool, mcp_path, call_custom_mcp_tool
 
 
-DELETED_FOLDER_NAME = "_deleted"
+# DELETED_FOLDER_NAME = "_deleted"
 
 
 def list_files(path: str = "") -> str:
@@ -20,42 +20,27 @@ def list_files(path: str = "") -> str:
 
 
 def search_files(query: str) -> str:
-    """Search files through the external MCP filesystem server."""
-    pattern = "*".join(query.strip().split())
+    """Search files through the custom MCP server."""
 
-    # Search for files matching the query pattern in the entire MCP filesystem
-    return call_mcp_tool("search_files",{"path": mcp_path(""),"pattern": f"**/*{pattern}*",},)
+    return call_custom_mcp_tool("search_files",{"query": query},)
 
 
 def read_file(path: str) -> str:
-    """Read a file through the external MCP filesystem server."""
+    """Read a file through the custom MCP server."""
 
-    # Read the contents of the specified file
-    return call_mcp_tool("read_text_file",{"path": mcp_path(path)},)
+    return call_custom_mcp_tool("read_file",{"path": path},)
 
 
 def delete_file(path: str) -> str:
-    """Delete a file through the external MCP filesystem server."""
+    """Delete a file through the custom MCP server."""
 
-    # Instead of permanently deleting the file, we move it to a "_deleted" folder in the MCP filesystem
-    deleted_root = Path(settings.MCP_FILESYSTEM_ROOT).resolve() / DELETED_FOLDER_NAME
+    # Call the delete_file tool from the custom MCP server
+    result = call_custom_mcp_tool("delete_file",{"path": path},)
 
-    # Ensure the "_deleted" folder exists
-    call_mcp_tool("create_directory",{"path": str(deleted_root)},)
-
-    source = Path(mcp_path(path))
-
-    if not source.exists():
-            return f"Could not delete {path}, file could not be found."
-
-    destination = deleted_root / f"{uuid4().hex}_{Path(path).name}"
-    # Move the file to the "_deleted" folder in the MCP filesystem
-    call_mcp_tool("move_file",{"source": mcp_path(path),"destination": str(destination),},)
-
-    # Also delete the file from the Django database so it doesn't show up in the UI
+    # Delete the file from the database as well
     UploadedFile.objects.filter(file=str(path).replace(str(settings.MCP_FILESYSTEM_ROOT) + "/", "").lstrip("/")).delete()
 
-    return f"Deleted {path}"
+    return result
 
 
 # These just to expose the above functions as tools to be used by the agent
