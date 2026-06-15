@@ -1,4 +1,6 @@
 import asyncio
+import os
+import sys
 from pathlib import Path
 
 from django.conf import settings
@@ -19,6 +21,21 @@ server_params = StdioServerParameters(
     ],
 )
 
+# Start the custom Python MCP server.
+# This server is located in the project root under mcp_server/.
+custom_server_params = StdioServerParameters(
+    command=sys.executable,
+    args=[
+        "-m",
+        "mcp_server.server",
+    ],
+    env={
+        **os.environ,
+        "PYTHONPATH": str(settings.BASE_DIR),
+        "MCP_FILESYSTEM_ROOT": str(MCP_ROOT),
+    },
+)
+
 
 # The tools below are wrappers around the tools exposed by the external MCP filesystem server
 # _call_tool is a helper function that connects to the MCP server and calls a tool with the given arguments, returning the raw result from the MCP server
@@ -31,12 +48,27 @@ async def _call_tool(tool_name: str, arguments: dict):
             await session.initialize()
             return await session.call_tool(tool_name, arguments)
 
+async def _call_custom_tool(tool_name: str, arguments: dict):
+    """Call one tool on the custom Python MCP server."""
+
+    async with stdio_client(custom_server_params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            return await session.call_tool(tool_name, arguments)
 
 # _list_tools is a helper function that lists the tools exposed by the external MCP server, used for debugging and validation
 async def _list_tools():
     """List tools exposed by the external MCP filesystem server."""
 
     async with stdio_client(server_params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            return await session.list_tools()
+        
+async def _list_custom_tools():
+    """List tools exposed by the custom Python MCP server."""
+
+    async with stdio_client(custom_server_params) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             return await session.list_tools()
@@ -73,12 +105,24 @@ def call_mcp_tool(tool_name: str, arguments: dict) -> str:
     result = asyncio.run(_call_tool(tool_name, arguments))
     return _extract_text(result)
 
+def call_custom_mcp_tool(tool_name: str, arguments: dict) -> str:
+    """Call one tool on the custom Python MCP server."""
+
+    result = asyncio.run(_call_custom_tool(tool_name, arguments))
+    return _extract_text(result)
+
 
 def list_mcp_tools() -> list[str]:
     """Return names of tools exposed by the MCP server."""
 
     # List the tools exposed by the MCP server and return their names
     result = asyncio.run(_list_tools())
+    return [tool.name for tool in result.tools]
+
+def list_custom_mcp_tools() -> list[str]:
+    """Return names of tools exposed by the custom Python MCP server."""
+
+    result = asyncio.run(_list_custom_tools())
     return [tool.name for tool in result.tools]
 
 

@@ -7,17 +7,16 @@ from langchain_core.tools import tool
 
 from apps.files.models import UploadedFile
 
-from .client import call_mcp_tool, mcp_path
+from .client import call_mcp_tool, mcp_path, call_custom_mcp_tool
 
 
 DELETED_FOLDER_NAME = "_deleted"
 
 
 def list_files(path: str = "") -> str:
-    """List files through the MCP filesystem server."""
-    
-    # List all files and folders in the given path
-    return call_mcp_tool("list_directory",{"path": mcp_path(path)},)
+    """List files through the custom MCP server."""
+
+    return call_custom_mcp_tool("list_files",{"path": path},)
 
 
 def search_files(query: str) -> str:
