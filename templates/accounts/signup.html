@@ -28,6 +28,22 @@
     </p>
 
     <p>
+      <label for="{{ form.first_name.id_for_label }}">
+        First name <span class="required-star">*</span>
+      </label>
+      {{ form.first_name }}
+      {{ form.first_name.errors }}
+    </p>
+
+    <p>
+      <label for="{{ form.last_name.id_for_label }}">
+        Last name <span class="required-star">*</span>
+      </label>
+      {{ form.last_name }}
+      {{ form.last_name.errors }}
+    </p>
+
+    <p>
       <label for="{{ form.password1.id_for_label }}">
         Password <span class="required-star">*</span>
       </label>
@@ -39,7 +55,7 @@
       <li id="password-length">✕ At least 8 characters</li>
       <li id="password-common">✕ Not a common password</li>
       <li id="password-numeric">✕ Not entirely numeric</li>
-      <li id="password-similar">✕ Not too similar to username or email</li>
+      <li id="password-similar">✕ Not too similar to account information</li>
     </ul>
 
     <p>
@@ -53,6 +69,11 @@
 
     <button type="submit">Create account</button>
   </form>
+
+  <p>
+    Already have an account?
+    <a href="{% url 'login' %}">Login</a>
+  </p>
 
   <style>
     .required-star {
@@ -91,6 +112,8 @@
   <script>
     const usernameInput = document.getElementById("id_username");
     const emailInput = document.getElementById("id_email");
+    const firstNameInput = document.getElementById("id_first_name");
+    const lastNameInput = document.getElementById("id_last_name");
     const password1Input = document.getElementById("id_password1");
     const password2Input = document.getElementById("id_password2");
 
@@ -110,6 +133,8 @@
     function updatePasswordChecks() {
       const username = usernameInput.value.trim().toLowerCase();
       const email = emailInput.value.trim().toLowerCase();
+      const firstName = firstNameInput.value.trim().toLowerCase();
+      const lastName = lastNameInput.value.trim().toLowerCase();
       const password1 = password1Input.value;
       const password2 = password2Input.value;
       const passwordLower = password1.toLowerCase();
@@ -135,11 +160,17 @@
       const similarToUsername = username && passwordLower.includes(username);
       const emailName = email.includes("@") ? email.split("@")[0] : email;
       const similarToEmail = emailName && passwordLower.includes(emailName);
+      const similarToFirstName = firstName && passwordLower.includes(firstName);
+      const similarToLastName = lastName && passwordLower.includes(lastName);
 
       setCheck(
         similarCheck,
-        password1.length > 0 && !similarToUsername && !similarToEmail,
-        "Not too similar to username or email"
+        password1.length > 0 &&
+          !similarToUsername &&
+          !similarToEmail &&
+          !similarToFirstName &&
+          !similarToLastName,
+        "Not too similar to account information"
       );
 
       setCheck(
@@ -149,7 +180,7 @@
       );
     }
 
-    [usernameInput, emailInput, password1Input, password2Input].forEach(function (input) {
+    [usernameInput, emailInput, firstNameInput, lastNameInput, password1Input, password2Input].forEach(function (input) {
       if (input) {
         input.addEventListener("input", updatePasswordChecks);
       }

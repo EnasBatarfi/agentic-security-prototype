@@ -10,8 +10,6 @@ from apps.files.models import UploadedFile
 from .client import call_custom_mcp_tool
 
 
-# DELETED_FOLDER_NAME = "_deleted"
-
 
 def list_files(path: str = "") -> str:
     """List files through the custom MCP server."""

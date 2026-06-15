@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Profile</h1>
+
+  <table>
+    <tr>
+      <th>Field</th>
+      <th>Value</th>
+    </tr>
+
+    <tr>
+      <td>Username</td>
+      <td>{{ profile_user.username }}</td>
+    </tr>
+
+    <tr>
+      <td>Email</td>
+      <td>{{ profile_user.email|default:"Not set" }}</td>
+    </tr>
+
+    <tr>
+      <td>First name</td>
+      <td>{{ profile_user.first_name|default:"Not set" }}</td>
+    </tr>
+
+    <tr>
+      <td>Last name</td>
+      <td>{{ profile_user.last_name|default:"Not set" }}</td>
+    </tr>
+
+    <tr>
+      <td>Date joined</td>
+      <td>{{ profile_user.date_joined }}</td>
+    </tr>
+
+    <tr>
+      <td>Last login</td>
+      <td>{{ profile_user.last_login|default:"Not available" }}</td>
+    </tr>
+  </table>
+
+{% endblock %}
