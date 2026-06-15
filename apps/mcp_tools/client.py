@@ -11,16 +11,6 @@ from mcp.client.stdio import stdio_client
 # It is uploads/ from the settings
 MCP_ROOT = Path(settings.MCP_FILESYSTEM_ROOT).resolve()
 
-# Start the MCP filesystem server with the same root as Django's file storage
-server_params = StdioServerParameters(
-    command="npx",
-    args=[
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        str(MCP_ROOT),
-    ],
-)
-
 # Start the custom Python MCP server.
 # This server is located in the project root under mcp_server/.
 custom_server_params = StdioServerParameters(
@@ -38,16 +28,7 @@ custom_server_params = StdioServerParameters(
 
 
 # The tools below are wrappers around the tools exposed by the external MCP filesystem server
-# _call_tool is a helper function that connects to the MCP server and calls a tool with the given arguments, returning the raw result from the MCP server
-async def _call_tool(tool_name: str, arguments: dict):
-    """Call one tool on the external MCP filesystem server."""
-
-    # Use the stdio_client to connect to the MCP server and call the tool with the given arguments
-    async with stdio_client(server_params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
-            return await session.call_tool(tool_name, arguments)
-
+# _call_custom_tool is a helper function that connects to the MCP server and calls a tool with the given arguments, returning the raw result from the MCP server
 async def _call_custom_tool(tool_name: str, arguments: dict):
     """Call one tool on the custom Python MCP server."""
 
@@ -56,15 +37,7 @@ async def _call_custom_tool(tool_name: str, arguments: dict):
             await session.initialize()
             return await session.call_tool(tool_name, arguments)
 
-# _list_tools is a helper function that lists the tools exposed by the external MCP server, used for debugging and validation
-async def _list_tools():
-    """List tools exposed by the external MCP filesystem server."""
-
-    async with stdio_client(server_params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
-            return await session.list_tools()
-        
+# _list_custom_tools is a helper function that lists the tools exposed by the custom MCP server 
 async def _list_custom_tools():
     """List tools exposed by the custom Python MCP server."""
 
@@ -98,13 +71,6 @@ def _extract_text(result) -> str:
     return ""
 
 
-def call_mcp_tool(tool_name: str, arguments: dict) -> str:
-    """Call one tool on the MCP filesystem server."""
-
-    # Call the tool with the given arguments and extract the text from the result
-    result = asyncio.run(_call_tool(tool_name, arguments))
-    return _extract_text(result)
-
 def call_custom_mcp_tool(tool_name: str, arguments: dict) -> str:
     """Call one tool on the custom Python MCP server."""
 
@@ -112,21 +78,8 @@ def call_custom_mcp_tool(tool_name: str, arguments: dict) -> str:
     return _extract_text(result)
 
 
-def list_mcp_tools() -> list[str]:
-    """Return names of tools exposed by the MCP server."""
-
-    # List the tools exposed by the MCP server and return their names
-    result = asyncio.run(_list_tools())
-    return [tool.name for tool in result.tools]
-
 def list_custom_mcp_tools() -> list[str]:
     """Return names of tools exposed by the custom Python MCP server."""
 
     result = asyncio.run(_list_custom_tools())
     return [tool.name for tool in result.tools]
-
-
-def mcp_path(path: str = "") -> str:
-    """Build a path for the MCP filesystem server."""
-
-    return str((MCP_ROOT / path).resolve())

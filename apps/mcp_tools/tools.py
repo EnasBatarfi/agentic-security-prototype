@@ -7,7 +7,7 @@ from langchain_core.tools import tool
 
 from apps.files.models import UploadedFile
 
-from .client import call_mcp_tool, mcp_path, call_custom_mcp_tool
+from .client import call_custom_mcp_tool
 
 
 # DELETED_FOLDER_NAME = "_deleted"
