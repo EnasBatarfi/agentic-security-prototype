@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, get_object_or_404
+from django.contrib import messages
 
 from .forms import UploadedFileForm
 from .models import UploadedFile
@@ -32,7 +33,12 @@ def file_upload(request):
                 uploaded_file.title = request.FILES["file"].name
             
             uploaded_file.save()
+
+            messages.success(request, "File uploaded successfully.")
+
             return redirect("file_list")
+        
+        messages.error(request, "File upload failed.")
     # If the request is get show the upload form
     else:
         form = UploadedFileForm()
@@ -51,6 +57,11 @@ def file_delete(request, file_id):
             owner=request.user,
         )
 
-        mcp_delete_file(uploaded_file.file.name)
+        try:
+            mcp_delete_file(uploaded_file.file.name)
+            messages.success(request, "File deleted successfully.")
+
+        except Exception:
+            messages.error(request, "File delete failed.")
 
     return redirect("file_list")

@@ -108,11 +108,15 @@ def profile_password_reset(request):
 
     # If the request is a POST the user wants to send a password reset email
     if request.method == "POST":
-        mcp_send_password_reset_email(
-            email=request.user.email,
-            domain=request.get_host(),
-            use_https=request.is_secure(),
-        )   
-        messages.success(request,"Email sent successfully to your registered email. Follow the steps in the email to change your password.",)
+
+        try:
+            mcp_send_password_reset_email(
+                email=request.user.email,
+                domain=request.get_host(),
+                use_https=request.is_secure(),
+            ) 
+            messages.success(request,"Email sent successfully to your registered email. Follow the steps in the email to change your password.",)
+        except  Exception:
+            messages.error(request, "Error happened while sending password reset email. Please try again later!")
 
     return redirect("profile")
