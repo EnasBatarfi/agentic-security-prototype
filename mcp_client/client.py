@@ -8,7 +8,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 # The MCP filesystem server will operate on the same root directory as Django's file storage
-# It is uploads/ from the settings
+# It is media/ from the settings
 MCP_ROOT = Path(settings.MCP_FILESYSTEM_ROOT).resolve()
 
 # Start the custom Python MCP server.

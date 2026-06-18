@@ -11,7 +11,7 @@ db.sqlite3
 staticfiles/
 
 # Local files
-uploads/
+media/
 tmp/
 
 # Secrets

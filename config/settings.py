@@ -132,8 +132,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
 # Define media settings for user-uploaded files
-MEDIA_URL = "uploads/"
-MEDIA_ROOT = BASE_DIR / "uploads"
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Set the MCP filesystem root to the media root
 MCP_FILESYSTEM_ROOT = MEDIA_ROOT
@@ -159,5 +159,5 @@ MAX_TOOL_STEPS = int(os.getenv("MAX_TOOL_STEPS", "5"))
 # Email settings for password reset, it will be file based 
 # While file? because mcp uses stdout so we used file for email to avoid conflicts with mcp output
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = BASE_DIR / "tmp" / "app_emails"
+EMAIL_FILE_PATH = BASE_DIR / "tmp" / "emails"
 DEFAULT_FROM_EMAIL = "noreply@example.com"

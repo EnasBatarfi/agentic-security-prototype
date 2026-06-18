@@ -18,7 +18,7 @@ class UploadedFile(models.Model):
         related_name="uploaded_files",
     )
     # The necessary fields to store the file and its metadata
-    # The file will be stored in the local filesystem under uploads/users/<owner_id>/<filename> 
+    # The file will be stored in the local filesystem under media/users/<owner_id>/<filename> 
     # and the metadata will be stored in the database
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to=uploaded_file_path)

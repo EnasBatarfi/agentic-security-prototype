@@ -25,7 +25,7 @@ def resolve_project_path(value: str) -> Path:
     Convert a relative project path into an absolute path.
 
     Example:
-    "uploads" -> "/path/to/project/uploads"
+    "media" -> "/path/to/project/media"
     """
     path = Path(value)
 
@@ -37,4 +37,4 @@ def resolve_project_path(value: str) -> Path:
 
 # Filesystem root used by the MCP server
 # This can be passed from Django through the MCP_FILESYSTEM_ROOT environment variable
-MCP_ROOT = resolve_project_path(os.getenv("MCP_FILESYSTEM_ROOT", "uploads"))
+MCP_ROOT = resolve_project_path(os.getenv("MCP_FILESYSTEM_ROOT", "media"))
