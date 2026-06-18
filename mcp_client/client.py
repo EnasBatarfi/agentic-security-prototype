@@ -23,11 +23,15 @@ custom_server_params = StdioServerParameters(
         **os.environ,
         "PYTHONPATH": str(settings.BASE_DIR),
         "MCP_FILESYSTEM_ROOT": str(MCP_ROOT),
+        "DJANGO_SETTINGS_MODULE": os.environ.get(
+            "DJANGO_SETTINGS_MODULE",
+            "config.settings",
+        ),
     },
 )
 
 
-# The tools below are wrappers around the tools exposed by the external MCP filesystem server
+# The tools below are wrappers around the tools exposed by the custom MCP filesystem server
 # _call_custom_tool is a helper function that connects to the MCP server and calls a tool with the given arguments, returning the raw result from the MCP server
 async def _call_custom_tool(tool_name: str, arguments: dict):
     """Call one tool on the custom Python MCP server."""
