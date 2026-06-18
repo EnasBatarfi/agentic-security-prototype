@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'apps.files.apps.FilesConfig',
     'apps.conversations.apps.ConversationsConfig',
     'apps.agents.apps.AgentsConfig',
-    'apps.mcp_tools.apps.McpToolsConfig',
 ]
 
 MIDDLEWARE = [

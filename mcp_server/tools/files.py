@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
-from .config import MCP_ROOT
+from ..config import MCP_ROOT
 
 
 def build_mcp_path(path: str = "") -> Path:

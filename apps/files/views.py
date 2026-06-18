@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 from .forms import UploadedFileForm
 from .models import UploadedFile
-from apps.mcp_tools.tools import delete_file as mcp_delete_file
+from mcp_client.tools import delete_file as mcp_delete_file
 
 
 @login_required

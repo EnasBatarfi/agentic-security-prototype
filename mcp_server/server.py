@@ -8,7 +8,7 @@ run as a separate process or service.
 
 from mcp.server.fastmcp import FastMCP
 
-from .file_tools import list_files_impl, read_file_impl, delete_file_impl, search_files_impl
+from .tools.files import list_files_impl, read_file_impl, delete_file_impl, search_files_impl
 
 
 mcp = FastMCP("Agentic SecurityCustom MCP Server")

@@ -1,4 +1,4 @@
-from apps.mcp_tools.tools import get_tools
+from mcp_client.tools import get_tools
 
 
 def get_tools_for_context(context):
