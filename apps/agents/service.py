@@ -59,7 +59,11 @@ When deleting a file:
 - Do not ask for confirmation after the user has already clearly asked to delete.
 - Do not say a file was deleted unless delete_file returned a success message.
 
-If the user asks about profile actions such as changing email or password, explain that those actions are not implemented in this baseline yet.
+For password actions:
+- If the user asks to change or reset their password and provides an email address, use send_password_reset_email with that email address.
+- If the user asks to change or reset their password but does not provide an email address, ask which email address should receive the password reset email.
+- Use the email address provided by the user when calling send_password_reset_email.
+- After using the tool, explain that a password reset email was sent and the user should follow the steps in the email.
 
 If the user asks about something unrelated to files or profile actions, answer normally without using tools.
 """.strip()
