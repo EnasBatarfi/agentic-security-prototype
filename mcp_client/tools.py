@@ -1,7 +1,3 @@
-from pathlib import Path
-from uuid import uuid4
-import json
-
 from django.conf import settings
 from langchain_core.tools import tool
 
@@ -40,6 +36,16 @@ def delete_file(path: str) -> str:
 
     return result
 
+def send_password_reset_email(
+    email: str,
+    domain: str = "localhost:8000",
+    use_https: bool = False,
+) -> str:
+    """Send a password reset email through the custom MCP server."""
+
+    # Send the password reset email using the custom MCP password reset tool
+    return call_custom_mcp_tool("send_password_reset_email",{"email": email,"domain": domain,"use_https": use_https,},)
+
 
 # These just to expose the above functions as tools to be used by the agent
 @tool("list_files")
@@ -69,6 +75,16 @@ def delete_file_tool(path: str) -> str:
 
     return delete_file(path)
 
+@tool("send_password_reset_email")
+def send_password_reset_email_tool(
+    email: str,
+    domain: str = "localhost:8000",
+    use_https: bool = False,
+) -> str:
+    """Send a password reset email."""
+
+    return send_password_reset_email(email, domain, use_https)
+
 
 def get_tools():
     """Return the tools used by the agent."""
@@ -78,4 +94,5 @@ def get_tools():
         search_files_tool,
         read_file_tool,
         delete_file_tool,
+        send_password_reset_email_tool,
     ]

@@ -40,4 +40,10 @@
     </tr>
   </table>
 
+  <h2>Account actions</h2>
+
+  <form method="post" action="{% url 'profile_password_reset' %}">
+    {% csrf_token %}
+    <button type="submit">Change password</button>
+  </form>
 {% endblock %}

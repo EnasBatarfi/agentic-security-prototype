@@ -4,7 +4,25 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from .providers import get_chat_model
 from .tooling import get_tools_for_context
 
+# MCP tool flow:
+# 1. Tool business logic is implemented in:
+#    - mcp_server/tools/files.py
+#    - mcp_server/tools/profiles.py
+# 2. mcp_server/server.py registers these implementations as MCP tools
+#    using FastMCP and runs with the stdio transport.
+# 3. mcp_client/client.py starts the MCP server as a subprocess using:
+#       python -m mcp_server.server
+#    It creates an MCP session over stdin/stdout and invokes tools using
+#    the MCP JSON-RPC protocol.
+# 4. mcp_client/tools.py contains application-level wrapper functions.
+#    These wrappers invoke the corresponding MCP tools by name.
+# 5. mcp_client/tools.py wraps those functions as LangChain tools using
+#    @tool. get_tools() returns them to the agent.
+# 6. apps/agents/tooling.py retrieves the tools, and
+#    apps/agents/service.py publishes them to the model using bind_tools().
 # System prompt for the agent to guide its behavior in the file management application.
+
+
 SYSTEM_PROMPT = """
 You are a helpful assistant for a file management web application.
 

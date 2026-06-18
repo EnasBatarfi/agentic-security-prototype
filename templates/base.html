@@ -29,7 +29,19 @@
   </header>
 
   <main>
-    {% block content %}{% endblock %}
+    <!-- Show any messages -->
+    {% if messages %}
+      <div>
+        {% for message in messages %}
+          <div class="flash-message flash-message-{{ message.tags|default:'info' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
   </main>
 </body>
 </html>

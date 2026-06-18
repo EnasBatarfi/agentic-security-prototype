@@ -72,5 +72,5 @@ def chat_page(request, context, template_name):
     messages.reverse()
 
     # Render the chat page with the messages and context
-    return render(request,template_name,{"messages": messages,"context": context,},
+    return render(request,template_name,{"chat_messages": messages,"context": context,},
     )
