@@ -156,3 +156,9 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:4b")
 
 # Maximum number of tool steps an agent can take in a single conversation turn
 MAX_TOOL_STEPS = int(os.getenv("MAX_TOOL_STEPS", "5"))
+
+# Email settings for password reset, it will be file based 
+# While file? because mcp uses stdout so we used file for email to avoid conflicts with mcp output
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = BASE_DIR / "tmp" / "app_emails"
+DEFAULT_FROM_EMAIL = "noreply@example.com"

@@ -12,6 +12,7 @@ staticfiles/
 
 # Local files
 uploads/
+tmp/
 
 # Secrets
 .env

@@ -48,23 +48,27 @@
         Password <span class="required-star">*</span>
       </label>
       {{ form.password1 }}
+
+      {% if form.password1.help_text %}
+        <small class="password-help">
+          {{ form.password1.help_text }}
+        </small>
+      {% endif %}
+
       {{ form.password1.errors }}
     </p>
-
-    <ul class="password-checks">
-      <li id="password-length">✕ At least 8 characters</li>
-      <li id="password-common">✕ Not a common password</li>
-      <li id="password-numeric">✕ Not entirely numeric</li>
-      <li id="password-similar">✕ Not too similar to account information</li>
-    </ul>
 
     <p>
       <label for="{{ form.password2.id_for_label }}">
         Password confirmation <span class="required-star">*</span>
       </label>
       {{ form.password2 }}
+
+      {% if form.password2.help_text %}
+        <small>{{ form.password2.help_text }}</small>
+      {% endif %}
+      
       {{ form.password2.errors }}
-      <small id="password-match">✕ Passwords match</small>
     </p>
 
     <button type="submit">Create account</button>
@@ -83,8 +87,15 @@
 
     .errorlist {
       color: red;
-      margin: 4px 0 0 0;
-      padding-left: 18px;
+      margin: 3px 0 0 0;
+      padding-left: 0;
+      list-style: none;
+      font-size: 13px;
+    }
+
+    .errorlist li {
+      color: red;
+      margin-bottom: 2px;
     }
 
     small {
@@ -93,99 +104,11 @@
       color: #666;
     }
 
-    .password-checks {
+    .password-help ul {
       margin-top: 4px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       padding-left: 20px;
-      font-size: 14px;
     }
 
-    .check-ok {
-      color: green;
-    }
-
-    .check-bad {
-      color: red;
-    }
   </style>
-
-  <script>
-    const usernameInput = document.getElementById("id_username");
-    const emailInput = document.getElementById("id_email");
-    const firstNameInput = document.getElementById("id_first_name");
-    const lastNameInput = document.getElementById("id_last_name");
-    const password1Input = document.getElementById("id_password1");
-    const password2Input = document.getElementById("id_password2");
-
-    const lengthCheck = document.getElementById("password-length");
-    const commonCheck = document.getElementById("password-common");
-    const numericCheck = document.getElementById("password-numeric");
-    const similarCheck = document.getElementById("password-similar");
-    const matchCheck = document.getElementById("password-match");
-
-    const commonPasswords = ["password", "password123", "12345678", "123456789", "qwerty123"];
-
-    function setCheck(element, ok, text) {
-      element.textContent = (ok ? "✓ " : "✕ ") + text;
-      element.className = ok ? "check-ok" : "check-bad";
-    }
-
-    function updatePasswordChecks() {
-      const username = usernameInput.value.trim().toLowerCase();
-      const email = emailInput.value.trim().toLowerCase();
-      const firstName = firstNameInput.value.trim().toLowerCase();
-      const lastName = lastNameInput.value.trim().toLowerCase();
-      const password1 = password1Input.value;
-      const password2 = password2Input.value;
-      const passwordLower = password1.toLowerCase();
-
-      setCheck(
-        lengthCheck,
-        password1.length >= 8,
-        "At least 8 characters"
-      );
-
-      setCheck(
-        commonCheck,
-        password1.length > 0 && !commonPasswords.includes(passwordLower),
-        "Not a common password"
-      );
-
-      setCheck(
-        numericCheck,
-        password1.length > 0 && !/^\d+$/.test(password1),
-        "Not entirely numeric"
-      );
-
-      const similarToUsername = username && passwordLower.includes(username);
-      const emailName = email.includes("@") ? email.split("@")[0] : email;
-      const similarToEmail = emailName && passwordLower.includes(emailName);
-      const similarToFirstName = firstName && passwordLower.includes(firstName);
-      const similarToLastName = lastName && passwordLower.includes(lastName);
-
-      setCheck(
-        similarCheck,
-        password1.length > 0 &&
-          !similarToUsername &&
-          !similarToEmail &&
-          !similarToFirstName &&
-          !similarToLastName,
-        "Not too similar to account information"
-      );
-
-      setCheck(
-        matchCheck,
-        password1.length > 0 && password1 === password2,
-        "Passwords match"
-      );
-    }
-
-    [usernameInput, emailInput, firstNameInput, lastNameInput, password1Input, password2Input].forEach(function (input) {
-      if (input) {
-        input.addEventListener("input", updatePasswordChecks);
-      }
-    });
-
-    updatePasswordChecks();
-  </script>
 {% endblock %}

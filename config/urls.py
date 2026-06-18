@@ -17,29 +17,23 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
 urlpatterns = [
     # Admin page 
     path("admin/", admin.site.urls),
 
-    # Built-in authentication views for login and logout
-    path(
-        "accounts/login/",
-        auth_views.LoginView.as_view(template_name="registration/login.html"),
-        name="login",
-    ),
-    path(
-        "accounts/logout/",
-        auth_views.LogoutView.as_view(),
-        name="logout",
-    ),
+    # Built-in authentication views:
+    # login, logout, password reset, password reset confirm, password change, etc
+    path("accounts/", include("django.contrib.auth.urls")),
 
-    # Anything under /accounts/ that is not login/logout goes to accounts app
+    # Anything under /accounts/ that is custom accounts app
+    # signup, profile, etc
     path("accounts/", include("apps.accounts.urls")),
+
     # The home page and any other URLs go to the files app
     path("", include("apps.files.urls")),
+    
     # URLs for the conversations app
     path("chat/", include("apps.conversations.urls")),
 ]

@@ -25,11 +25,16 @@
 
     <button type="submit">Login</button>
 
+  </form>
+  
+    <p>
+      <a href="{% url 'password_reset' %}">Forgot password?</a>
+    </p>
+
     <p>
       No account yet?
       <a href="{% url 'signup' %}">Create one</a>
     </p>
-  </form>
 
   <style>
     .required-star {
