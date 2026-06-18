@@ -151,6 +151,9 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:4b")
 
 # Maximum number of tool steps an agent can take in a single conversation turn

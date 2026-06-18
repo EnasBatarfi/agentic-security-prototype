@@ -27,8 +27,8 @@ SYSTEM_PROMPT = """
 You are a helpful assistant for a file management web application.
 
 The application has two chat areas:
-- file chat, where users ask about uploaded files
-- profile chat, where users may ask profile-related questions
+- file chat, where users usually ask about uploaded files
+- profile chat, where users usually ask profile-related questions
 
 Your job is to help the user understand and manage uploaded files. The user may ask you to find files, read file contents, summarize file contents, or delete files.
 
@@ -115,6 +115,10 @@ def run_agent(context, history):
             args = tool_call["args"]
             tool_id = tool_call["id"]
 
+            # --- DEBUGGING ---
+            print(f"Agent requested tool: {name}")
+            print(f"Tool arguments: {args}")
+
             selected_tool = tools_by_name.get(name)
 
             if selected_tool is None:
@@ -122,6 +126,9 @@ def run_agent(context, history):
             else:
                 # invoke the tool with the provided arguments and get the result
                 tool_result = selected_tool.invoke(args)
+
+            # --- DEBUGGING ---
+            print(f"Tool result: {tool_result}")
 
             # add the result as a ToolMessage to the messages list
             # tool message is a special type of message that includes the tool call id so that the model can associate the result with the correct tool call in its next response
