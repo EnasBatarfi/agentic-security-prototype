@@ -132,7 +132,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
 # Define media settings for user-uploaded files
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Set the MCP filesystem root to the media root
