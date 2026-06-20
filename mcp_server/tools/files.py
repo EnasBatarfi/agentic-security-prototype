@@ -29,10 +29,10 @@ def list_files_impl(path: str = "") -> str:
     """
     target_path = build_mcp_path(path)
 
-    entries = sorted(
-        target_path.iterdir(),
-        key=lambda item: item.name.lower(),
-    )
+    if target_path.is_file():
+        return str(target_path)
+
+    entries = sorted(target_path.rglob("*"), key=lambda item: item.as_posix().lower())
 
     return "\n".join(str(entry) for entry in entries)
 
