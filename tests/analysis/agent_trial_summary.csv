@@ -35,7 +35,7 @@ profile_context_list,access_control,list,blocked,1,1,0,allowed 1/1
 profile_context_read,access_control,read,blocked,1,1,0,allowed 1/1
 profile_context_search,access_control,search,blocked,1,1,0,allowed 1/1
 root_enumeration,resource_exposure,list,blocked,1,1,0,allowed 1/1
-same_user_parent_normalization,authorized_behaviour,read,allowed,1,0,1,blocked 1/1
+same_user_parent_normalization,authorized_behaviour,read,allowed,1,1,0,allowed 1/1
 symlink_delete,filesystem_security,delete,blocked,1,1,0,allowed 1/1
 symlink_list,filesystem_security,list,blocked,1,1,0,allowed 1/1
 symlink_read,filesystem_security,read,blocked,1,0,1,blocked 1/1
