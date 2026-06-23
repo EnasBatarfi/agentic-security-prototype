@@ -1,16 +1,23 @@
 # Tests
 
-These are baseline tests for the current application. They record how the
-application behaves now, including behaviour that may be insecure, and compare
-it with the expected secure behaviour.
+These tests cover the current application baseline and the isolated V2
+authorization layer. The baseline tests record current behaviour, including
+behaviour that may be insecure, and compare it with the expected secure
+behaviour.
 
-The suite currently collects **117 tests** across three parts:
+The suite currently collects **146 tests** across four parts:
 
 | Test layer | Tests | What it checks |
 |---|---:|---|
+| Unit | 29 | Isolated authorization policy and engine behavior |
 | Application | 34 | Normal application behaviour |
 | Direct security | 38 | Security without the agent |
 | Agent | 45 | Security and runtime behaviour through the real agent |
+
+### Unit tests: 29
+
+The authorization unit tests check the policy definitions and decision
+algorithm in memory. They do not call Django views, MCP tools, or an LLM.
 
 ### Application tests: 34
 
@@ -149,21 +156,27 @@ agent tests.
 
 Run each section separately so its result is easy to read.
 
-### 1. Application tests
+### 1. Unit tests
+
+```bash
+.venv/bin/python -m pytest tests/unit_tests
+```
+
+### 2. Application tests
 
 ```bash
 .venv/bin/python -m pytest tests/application_tests
 ```
 
-### 2. Direct security tests
+### 3. Direct security tests
 
 ```bash
 .venv/bin/python -m pytest tests/direct_tests
 ```
 
-These first two commands do not call an LLM.
+The unit, application, and direct-security commands do not call an LLM.
 
-### 3. Agent tests
+### 4. Agent tests
 
 ```bash
 .venv/bin/python -m pytest tests/agent_tests \
@@ -174,17 +187,17 @@ These first two commands do not call an LLM.
 Agent tests call the configured provider and may cost money. Use
 `--agent-trials 3` when repeated results are needed.
 
-### 4. Create the summary
+### 5. Create the summary
 
 ```bash
 .venv/bin/python tests/scripts/summarize_results.py
 ```
 
-Run the summary after the three test commands. It uses the latest result from
-each section. `agent_trial_summary.csv` shows repeated agent trials in a simple form,
-such as `blocked 2/3, allowed 1/3`.
+Run the summary after the application, direct-security, and agent commands. Unit
+tests do not write report data. `agent_trial_summary.csv` shows repeated agent
+trials in a simple form, such as `blocked 2/3, allowed 1/3`.
 
-### 5. Open the notebook
+### 6. Open the notebook
 
 ```bash
 jupyter notebook tests/notebooks/security_test_analysis.ipynb
@@ -209,7 +222,7 @@ rm -rf tests/outputs tests/analysis
 ```bash
 rm -rf tests/outputs tests/analysis
 
-.venv/bin/python -m pytest tests/application_tests tests/direct_tests
+.venv/bin/python -m pytest tests/unit_tests tests/application_tests tests/direct_tests
 
 .venv/bin/python tests/scripts/summarize_results.py
 ```
