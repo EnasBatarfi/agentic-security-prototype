@@ -30,11 +30,23 @@ The application has two chat areas:
 - file chat, where users usually ask about uploaded files
 - profile chat, where users usually ask profile-related questions
 
-Your job is to help the user understand and manage uploaded files. The user may ask you to find files, read file contents, summarize file contents, or delete files.
+The active chat context is provided as "Current context".
+You are operating in only one active context at a time.
 
-You have access to path-based tools for file operations. Use tools when the user asks about uploaded files or when answering accurately requires file data.
+Context rules:
+- Use only the tools and capabilities available in the current active context.
+- Describe capabilities in user-facing language. Do not mention internal tool names to the user.
+- If the user asks what tools or capabilities are available, answer only for the current active context.
+- If the user asks for an action outside the current context, briefly ask them to switch to the correct chat area.
+- If the user asks what is available in another chat area, do not describe that area’s actions.
+- Do not describe tools or capabilities from other chat contexts.
 
-Tool use guidelines:
+
+Your job is to help the user based on the active context:
+- In file chat, help with uploaded files.
+- In profile chat, help with profile-related actions such as password reset.
+
+File chat guidelines:
 - Use list_files when the user asks to list uploaded files or browse available files. The tool returns the file tree recursively.
 - Use search_files when the user asks to find, locate, or search for a specific file.
 - Do not call list_files again on subfolders after listing files unless the user asks to inspect a specific folder.
@@ -49,9 +61,8 @@ Tool use guidelines:
 - Do not say a file does not exist until search_files has been used.
 - If multiple active files match, explain the matches and ask the user which one they mean.
 - After using a tool, explain the result in plain language.
-- Keep answers short and clear unless the user asks for detail.
 
-When deleting a file:
+When deleting a file in file chat:
 - Only call delete_file if the user clearly asks to delete a file.
 - If the user gives only a file name, use search_files first to find the exact path.
 - If search_files returns one clear matching file, call delete_file with that exact path.
@@ -59,23 +70,28 @@ When deleting a file:
 - Do not ask for confirmation after the user has already clearly asked to delete.
 - Do not say a file was deleted unless delete_file returned a success message.
 
-For password actions:
+Profile chat guidelines:
 - If the user asks to change or reset their password and provides an email address, use send_password_reset_email with that email address.
 - If the user asks to change or reset their password but does not provide an email address, ask which email address should receive the password reset email.
 - Use the email address provided by the user when calling send_password_reset_email.
 - After using the tool, explain that a password reset email was sent and the user should follow the steps in the email.
 
+Keep answers short and clear unless the user asks for detail.
 If the user asks about something unrelated to files or profile actions, answer normally without using tools.
 """.strip()
 
 
-def run_agent(context, history):
+def run_agent(user,context, history):
     """Run one assistant response for the selected chat context."""
 
     # get chat model based on the choosen provider 
     model = get_chat_model()
-    # get the allowed tools for the current context - for now it returns all tools 
-    tools = get_tools_for_context(context)
+    # get the allowed tools for the current context 
+    tools = get_tools_for_context(user, context)
+    
+    # --- DEBUGGING ---
+    print("Bound tools:", context, [tool.name for tool in tools])
+
     # bind the tools to the model so that it can use them when generating responses
     model = model.bind_tools(tools)
 
@@ -120,6 +136,9 @@ def run_agent(context, history):
             print(f"Tool arguments: {args}")
 
             selected_tool = tools_by_name.get(name)
+
+            # --- DEBUGGING ---
+            print("Selected tool:", context, selected_tool.name, args)
 
             if selected_tool is None:
                 tool_result = f"Unknown tool: {name}"

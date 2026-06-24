@@ -5,19 +5,20 @@ authorization layer. The baseline tests record current behaviour, including
 behaviour that may be insecure, and compare it with the expected secure
 behaviour.
 
-The suite currently collects **146 tests** across four parts:
+The suite currently collects **155 tests** across four parts:
 
 | Test layer | Tests | What it checks |
 |---|---:|---|
-| Unit | 29 | Isolated authorization policy and engine behavior |
+| Unit | 38 | Isolated authorization and agent tool-exposure behavior |
 | Application | 34 | Normal application behaviour |
 | Direct security | 38 | Security without the agent |
 | Agent | 45 | Security and runtime behaviour through the real agent |
 
-### Unit tests: 29
+### Unit tests: 38
 
-The authorization unit tests check the policy definitions and decision
-algorithm in memory. They do not call Django views, MCP tools, or an LLM.
+The unit tests check the authorization policy definitions, decision algorithm,
+and agent tool-exposure filtering in memory. They do not call Django views,
+MCP tools, or an LLM.
 
 ### Application tests: 34
 
