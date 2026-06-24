@@ -36,6 +36,38 @@ from .actions import (
 )
 from .types import AuthorizationRequest, Effect
 
+
+# Example: user asks the LLM to reset their password
+#
+# 1. Tool exposure:
+#    The application checks which tools are allowed in the current chat context.
+#    In the profile context, send_password_reset_email is shown to the LLM,
+#    while file tools are hidden.
+#
+# 2. Tool selection:
+#    The LLM may choose send_password_reset_email from the available tools.
+#    However, exposing the tool does not mean it is automatically authorized
+#    for execution.
+#
+# 3. Trusted request construction:
+#    Before executing the tool, the application creates an AuthorizationRequest.
+#    The principal ID, account ID, account owner ID, and email come from Django
+#    request.user, not from the user's prompt or the LLM.
+#
+# 4. Runtime authorization:
+#    The policy engine evaluates the AuthorizationRequest using the
+#    owner-may-request-own-password-reset policy. It permits the action only
+#    when the authenticated user owns the target account.
+#
+# 5. Enforcement:
+#    If allowed, the application invokes send_password_reset_email using
+#    request.user.email. The LLM cannot choose another account or email.
+#
+#    If denied, the tool is not invoked. The user receives a simple message
+#    saying the action is not allowed, and the detailed decision is recorded
+#    in the authorization audit log.
+
+
 # This helps letting us use the short name Condition for any function that receives an AuthorizationRequest and returns True or False
 Condition = Callable[[AuthorizationRequest], bool]
 
@@ -74,6 +106,7 @@ class Policy:
         )
 
 
+# This is mainly to prevent cases like: tool = "delete_file" while action = "file:read" and ensure the request is consistent 
 def request_is_consistent(request: AuthorizationRequest) -> bool:
     """Return True when trusted request fields describe the same operation."""
 
@@ -99,10 +132,7 @@ def owns_resource(request: AuthorizationRequest) -> bool:
 
 def owns_account(request: AuthorizationRequest) -> bool:
     """Return True if the user owns the account."""
-    return (
-        owns_resource(request)
-        and request.resource.id == request.principal.id
-    )
+    return owns_resource(request) 
 
 
 def is_file_tool(request: AuthorizationRequest) -> bool:

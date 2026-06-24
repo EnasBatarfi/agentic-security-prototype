@@ -1,16 +1,14 @@
 from django.conf import settings
 from django.db import models
 
-from apps.authorization.actions import FILE_CONTEXT, PROFILE_CONTEXT
-
 
 class ChatMessage(models.Model):
     """One saved message from file chat or profile chat."""
 
     # Class for context choices
     class Context(models.TextChoices):
-        FILE = FILE_CONTEXT, "File Chat"
-        PROFILE = PROFILE_CONTEXT, "Profile Chat"
+        FILE = "file", "File Chat"
+        PROFILE = "profile", "Profile Chat"
 
     # Class for role choices
     class Role(models.TextChoices):
