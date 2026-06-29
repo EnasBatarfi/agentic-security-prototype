@@ -51,7 +51,10 @@ def can_expose_tool(principal: Principal, context: str, tool_name: str) -> bool:
         resource = tool/read_file
         context = file
     """
-
+    # In this PEP, the protected resource is the tool itself
+    # We are only checking whether this tool can be shown to the LLM in the current chat context
+    # So the resource id is the tool name for example "read_file"
+    # There is no owner check bc the tool is not owned by any user and it is a system resource
     request = AuthorizationRequest(
         principal=principal,
         action=TOOL_EXPOSE,
@@ -75,6 +78,7 @@ def get_tools_for_context(user: Any, context: str):
     principal = principal_from_user(user)
     allowed_tools = []
 
+    # Each available MCP tool is checked against the policy engine before it is bound to the model
     for tool in get_tools():
         if can_expose_tool(principal, context, tool.name):
             allowed_tools.append(tool)
