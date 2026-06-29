@@ -3,6 +3,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 
 from .providers import get_chat_model
 from .tooling import get_tools_for_context
+from .enforcement import authorize_tool_invocation
 
 # MCP tool flow:
 # 1. Tool business logic is implemented in:
@@ -60,7 +61,9 @@ File chat guidelines:
 - Do not invent file names, file paths, or file contents.
 - Do not say a file does not exist until search_files has been used.
 - If multiple active files match, explain the matches and ask the user which one they mean.
-- After using a tool, explain the result in plain language.
+- After using a tool, briefly explain the result in plain language. Do not mention internal tool names.
+- If a file read or delete request is not allowed, explain briefly that the file could not be accessed or changed because the application did not permit it.
+- Do not claim that a file was read or deleted unless the tool result clearly shows success.
 
 When deleting a file in file chat:
 - Only call delete_file if the user clearly asks to delete a file.
@@ -74,7 +77,12 @@ Profile chat guidelines:
 - If the user asks to change or reset their password and provides an email address, use send_password_reset_email with that email address.
 - If the user asks to change or reset their password but does not provide an email address, ask which email address should receive the password reset email.
 - Use the email address provided by the user when calling send_password_reset_email.
-- After using the tool, explain that a password reset email was sent and the user should follow the steps in the email.
+- The application will only allow a password reset request if the provided email belongs to the signed-in user.
+- Do not answer whether an email address is registered in the application.
+- Do not guess, imply, or speculate that an email address is registered or not registered.
+- After using the tool, briefly explain the result in plain language. Do not mention internal tool names.
+- If the reset request is accepted, say that the password reset request was accepted and the user should check their email.
+- If the reset request is not allowed, say: "The reset request could not be completed for that email. Please use the email linked to your signed-in account."
 
 Keep answers short and clear unless the user asks for detail.
 If the user asks about something unrelated to files or profile actions, answer normally without using tools.
@@ -84,9 +92,13 @@ If the user asks about something unrelated to files or profile actions, answer n
 def run_agent(user,context, history):
     """Run one assistant response for the selected chat context."""
 
+    # --- DEBUGGING ---
+    print("Current Django user:", user.pk, user.email)
+
     # get chat model based on the choosen provider 
     model = get_chat_model()
-    # get the allowed tools for the current context 
+
+    # --- First PEP: get the allowed tools for the current context ---
     tools = get_tools_for_context(user, context)
     
     # --- DEBUGGING ---
@@ -137,14 +149,20 @@ def run_agent(user,context, history):
 
             selected_tool = tools_by_name.get(name)
 
-            # --- DEBUGGING ---
-            print("Selected tool:", context, selected_tool.name, args)
-
+            # To prevent the model hallucinated or accessing unauthorized tools, we check if the tool name is in the list of allowed tools
             if selected_tool is None:
                 tool_result = f"Unknown tool: {name}"
             else:
-                # invoke the tool with the provided arguments and get the result
-                tool_result = selected_tool.invoke(args)
+                # --- DEBUGGING ---
+                print("Selected tool:", context, selected_tool.name, args)
+
+                # --- Second PEP: authorize the selected tool invocation before execution ---
+                authorization = authorize_tool_invocation(user=user, context=context, tool_name=name, args=args)
+
+                if not authorization.allowed:
+                    tool_result = authorization.message
+                else:
+                    tool_result = selected_tool.invoke(authorization.safe_args)
 
             # --- DEBUGGING ---
             print(f"Tool result: {tool_result}")
