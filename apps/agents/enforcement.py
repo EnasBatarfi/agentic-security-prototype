@@ -88,7 +88,7 @@ def file_resource(args: dict[str, Any]) -> Resource:
     )
 
 
-def account_resource(args: dict[str, Any]) -> Resource:
+def account_resource(principal: Principal, args: dict[str, Any]) -> Resource:
     """
     Build the target account resource from the provided email.
 
@@ -100,10 +100,24 @@ def account_resource(args: dict[str, Any]) -> Resource:
     # Extract the requested email from the tool call arguments then normalize it to lowercase and strip whitespace
     requested_email = str(args.get("email", "")).strip().lower()
 
-    # If no email was provided, return an unknown resource
+    # Case 1: user asked without giving an email
+    # Use the signed-in user's trusted account email
     if not requested_email:
-        return Resource(type=RESOURCE_ACCOUNT)
+        # If the principal has no id or email, return an unknown resource
+        if principal.id is None or not principal.email:
+            return Resource(type=RESOURCE_ACCOUNT)
 
+        # if the principal has an id but no email, add the principal's email to the resource attributes
+        return Resource(
+            type=RESOURCE_ACCOUNT,
+            id=str(principal.id),
+            owner_id=str(principal.id),
+            attributes={
+                "email": principal.email,
+            },
+        )
+
+    # Case 2: user asked for a specific email
     # Find the database record using the provided email
     User = get_user_model()
     target_user = User.objects.filter(email__iexact=requested_email).first()
@@ -141,7 +155,7 @@ def resource_for_tool_call(principal: Principal, tool_name: str, args: dict[str,
 
     # if the tool is one that operates on a user account, return an account resource
     if tool_name == TOOL_SEND_PASSWORD_RESET_EMAIL:
-        return account_resource(args)
+        return account_resource(principal, args)
 
     # if the tool is unknown, return an unknown resource
     return Resource(type="unknown")
