@@ -22,18 +22,18 @@ mcp = FastMCP("Agentic Security Custom MCP Server")
 
 
 @mcp.tool()
-def list_files(path: str = "") -> str:
+def list_files(path: str) -> str:
     """
     List files and folders using the custom MCP server.
     """
     return list_files_impl(path)
 
 @mcp.tool()
-def search_files(query: str) -> str:
+def search_files(path: str, query: str) -> str:
     """
     Search files and folders using the custom MCP server.
     """
-    return search_files_impl(query)
+    return search_files_impl(path, query)
 
 
 @mcp.tool()

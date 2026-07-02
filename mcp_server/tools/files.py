@@ -32,7 +32,7 @@ def to_mcp_relative(path: Path) -> str:
     return path.resolve().relative_to(MCP_ROOT.resolve()).as_posix()
 
 
-def list_files_impl(path: str = "") -> str:
+def list_files_impl(path: str) -> str:
     """
     List files and folders for a path.
 
@@ -53,22 +53,28 @@ def list_files_impl(path: str = "") -> str:
     # Return relative path for each entry in the directory
     return "\n".join(to_mcp_relative(entry) for entry in entries)
 
-def search_files_impl(query: str) -> str:
+def search_files_impl(path: str, query: str) -> str:
     """
     Search files and folders by name.
 
     args:
+        path: The starting path to search
         query: The search query
 
     returns:
         A list of matching files
     """
     words = query.lower().strip().split()
+    target_path = build_mcp_path(path)
+
+    if target_path.is_file():
+        # If the target is a file return its relative path
+        return to_mcp_relative(target_path)
 
     matches = sorted(
         (
             path
-            for path in MCP_ROOT.rglob("*")
+            for path in target_path.rglob("*")
             if all(word in path.name.lower() for word in words)
         ),
         key=lambda item: item.as_posix(),
