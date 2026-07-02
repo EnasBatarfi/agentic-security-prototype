@@ -17,28 +17,51 @@ def build_mcp_path(path: str = "") -> Path:
     """
     Build a filesystem path using the configured MCP root.
 
-    This follows the same style as the existing Django MCP client:
-    combine the MCP root with the requested path, then resolve it.
+    Example:
+    users/10/a.txt -> /project/media/users/10/a.txt
     """
     return (MCP_ROOT / (path or "")).resolve()
+
+def to_mcp_relative(path: Path) -> str:
+    """
+    Return a filesystem path relative to MCP_ROOT.
+
+    Example:
+    /project/media/users/10/a.txt -> users/10/a.txt
+    """
+    return path.resolve().relative_to(MCP_ROOT.resolve()).as_posix()
 
 
 def list_files_impl(path: str = "") -> str:
     """
     List files and folders for a path.
+
+    args:
+        path: The path to list
+
+    returns:
+        A list of files and folders
     """
     target_path = build_mcp_path(path)
 
     if target_path.is_file():
-        return str(target_path)
+        # If the target is a file return its relative path
+        return to_mcp_relative(target_path)
 
     entries = sorted(target_path.rglob("*"), key=lambda item: item.as_posix().lower())
 
-    return "\n".join(str(entry) for entry in entries)
+    # Return relative path for each entry in the directory
+    return "\n".join(to_mcp_relative(entry) for entry in entries)
 
 def search_files_impl(query: str) -> str:
     """
     Search files and folders by name.
+
+    args:
+        query: The search query
+
+    returns:
+        A list of matching files
     """
     words = query.lower().strip().split()
 
@@ -51,12 +74,19 @@ def search_files_impl(query: str) -> str:
         key=lambda item: item.as_posix(),
     )
 
-    return "\n".join(str(match) for match in matches)
+    # Return relative path for each match in the directory
+    return "\n".join(to_mcp_relative(match) for match in matches)
 
 
 def read_file_impl(path: str) -> str:
     """
     Read a text file.
+
+    args:
+        path: The path to the file to read
+
+    returns:
+        The contents of the file
     """
     target_path = build_mcp_path(path)
 
@@ -66,6 +96,11 @@ def read_file_impl(path: str) -> str:
 def delete_file_impl(path: str) -> str:
     """
     Delete a file.
+
+    args:
+        path: The path to the file to delete
+    returns:
+        A message indicating the file was deleted
     """
     source = build_mcp_path(path)
 
