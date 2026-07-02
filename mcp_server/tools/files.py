@@ -18,18 +18,31 @@ def build_mcp_path(path: str = "") -> Path:
     Build a filesystem path using the configured MCP root.
 
     Example:
-    users/10/a.txt -> /project/media/users/10/a.txt
+    When MCP_ROOT is /project/media/users/10
+    a.txt -> /project/media/users/10/a.txt
     """
-    return (MCP_ROOT / (path or "")).resolve()
+    root = MCP_ROOT
+    target = (root / (path or ".")).resolve()
+
+    # If the path is inside the MCP root return it
+    try:
+        target.relative_to(root)
+    # Otherwise if the path is outside the MCP root raise an error
+    except ValueError:
+        raise ValueError("Path is outside MCP root.")
+
+    return target
 
 def to_mcp_relative(path: Path) -> str:
     """
     Return a filesystem path relative to MCP_ROOT.
 
     Example:
-    /project/media/users/10/a.txt -> users/10/a.txt
+    When MCP_ROOT is /project/media/users/10
+    /project/media/users/10/a.txt -> a.txt
     """
-    return path.resolve().relative_to(MCP_ROOT.resolve()).as_posix()
+    # 
+    return path.resolve().relative_to(MCP_ROOT).as_posix()
 
 
 def list_files_impl(path: str) -> str:
@@ -109,6 +122,10 @@ def delete_file_impl(path: str) -> str:
         A message indicating the file was deleted
     """
     source = build_mcp_path(path)
+
+    # Ensure we don't delete the MCP root like the user directory
+    if source == MCP_ROOT.resolve():
+        raise ValueError("Cannot delete MCP root.")
 
     deleted_root = MCP_ROOT / "_deleted"
     deleted_root.mkdir(exist_ok=True)
