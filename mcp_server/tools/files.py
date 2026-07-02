@@ -17,8 +17,8 @@ def build_mcp_path(path: str = "") -> Path:
     """
     Build a filesystem path using the configured MCP root.
 
-    This follows the same style as the existing Django MCP client:
-    combine the MCP root with the requested path, then resolve it.
+    Example:
+    users/10/a.txt -> /project/media/users/10/a.txt
     """
     return (MCP_ROOT / (path or "")).resolve()
 
@@ -26,6 +26,12 @@ def build_mcp_path(path: str = "") -> Path:
 def list_files_impl(path: str = "") -> str:
     """
     List files and folders for a path.
+
+    args:
+        path: The path to list
+
+    returns:
+        A list of files and folders
     """
     target_path = build_mcp_path(path)
 
@@ -36,9 +42,16 @@ def list_files_impl(path: str = "") -> str:
 
     return "\n".join(str(entry) for entry in entries)
 
+
 def search_files_impl(query: str) -> str:
     """
     Search files and folders by name.
+
+    args:
+        query: The search query
+
+    returns:
+        A list of matching files
     """
     words = query.lower().strip().split()
 
@@ -57,6 +70,12 @@ def search_files_impl(query: str) -> str:
 def read_file_impl(path: str) -> str:
     """
     Read a text file.
+
+    args:
+        path: The path to the file to read
+
+    returns:
+        The contents of the file
     """
     target_path = build_mcp_path(path)
 
@@ -66,6 +85,12 @@ def read_file_impl(path: str) -> str:
 def delete_file_impl(path: str) -> str:
     """
     Delete a file.
+
+    args:
+        path: The path to the file to delete
+
+    returns:
+        A message indicating the file was deleted
     """
     source = build_mcp_path(path)
 
