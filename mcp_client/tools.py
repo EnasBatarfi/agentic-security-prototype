@@ -89,6 +89,7 @@ def send_password_reset_email_tool(email: str, domain: str = "localhost:8000", u
 def get_tools(user_id: int | str | None = None):
     """Return the tools used by the agent."""
 
+    # If no user id is provided, return the send_password_reset_email tool only bc it is not user specific we can use it for all users without sign-in or id info
     if user_id is None:
         return [
             send_password_reset_email_tool,

@@ -68,13 +68,20 @@ def file_resource(principal: Principal, args: dict[str, Any]) -> Resource:
 
     # Find the database record using the provided path
     path = str(args.get("path", "")).strip()
-    resolved = resolve_user_file_path(path, principal.id, allow_root=False)
 
-    if resolved is None:
-        return Resource(type=RESOURCE_FILE)
+    # First try to identify an explicitly requested canonical DB path
+    uploaded_file = UploadedFile.objects.filter(file=path).first()
 
-    database_path, _mcp_path = resolved
-    uploaded_file = UploadedFile.objects.filter(file=database_path).first()
+    # If no database record was found, try to resolve the file path to a canonical DB path under the signed-in user
+    if uploaded_file is None:
+        resolved = resolve_user_file_path(path, principal.id, allow_root=False)
+
+        # If the file path could not be resolved, return an unknown resource bc it could be invalid or none 
+        if resolved is None:
+            return Resource(type=RESOURCE_FILE)
+
+        database_path, _mcp_path = resolved
+        uploaded_file = UploadedFile.objects.filter(file=database_path).first()
 
     # If no database record was found return an unknown resource
     if uploaded_file is None:
