@@ -29,3 +29,6 @@ tests/manual_test/
 
 # Local authorization design notes
 apps/authorization/readme.txt
+
+# private notes
+progress_before_break.md

@@ -47,6 +47,7 @@ def to_mcp_relative(path: Path) -> str:
     try:
         return path.resolve().relative_to(MCP_ROOT).as_posix()
     except ValueError:
+        # --- DEBUGGING ---
         print(f"[SECURITY][MCP ROOT] Blocked resolved path={path.resolve()} outside root={MCP_ROOT}", file=sys.stderr)
         raise ValueError("Path is outside MCP root.")
 
