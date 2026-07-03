@@ -22,10 +22,7 @@ Also, it normalizes and validates user paths.
 
 from pathlib import PurePosixPath
 
-# Invalid path message
-INVALID_MESSAGE = "Invalid or unauthorized file path."
-
-def normalize_user_file_path(path: str, *, allow_root: bool = True) -> str:
+def normalize_user_file_path(path: str, *, allow_root: bool = True) -> str | None:
     """
     Normalize and validate a user-provided file path.
 
@@ -95,7 +92,7 @@ def normalize_user_file_path(path: str, *, allow_root: bool = True) -> str:
     return pure_path.as_posix()
 
 
-def resolve_user_file_path(path: str, user_id: int | str, *,allow_root: bool = True,) -> tuple[str, str] | str:
+def resolve_user_file_path(path: str, user_id: int | str, *,allow_root: bool = True,) -> tuple[str, str] | None:
     """
     Resolve user path input into Django storage path and MCP path.
 
@@ -135,7 +132,7 @@ def resolve_user_file_path(path: str, user_id: int | str, *,allow_root: bool = T
     normalized_path = normalize_user_file_path(path, allow_root=allow_root)
 
     # If the path is None, return invalid msg. It means invalid path for any of the reasons above
-    if normalized_path == INVALID_MESSAGE:
+    if normalized_path is None:
         return None
 
     # Get the root folder for the user
