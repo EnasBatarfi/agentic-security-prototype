@@ -11,32 +11,43 @@ from mcp.client.stdio import stdio_client
 # It is media/ from the settings
 MCP_ROOT = Path(settings.MCP_FILESYSTEM_ROOT).resolve()
 
-# Start the custom Python MCP server.
-# This server is located in the project root under mcp_server/.
-custom_server_params = StdioServerParameters(
-    command=sys.executable,
-    args=[
-        "-m",
-        "mcp_server.server",
-    ],
-    env={
-        **os.environ,
-        "PYTHONPATH": str(settings.BASE_DIR),
-        "MCP_FILESYSTEM_ROOT": str(MCP_ROOT),
-        "DJANGO_SETTINGS_MODULE": os.environ.get(
-            "DJANGO_SETTINGS_MODULE",
-            "config.settings",
-        ),
-    },
-)
+# Instead of using one global root (media), we customize it to pass the signed in user's root directory
+# However, the default root is still media/
+def build_custom_server_params(filesystem_root: str | None = None) -> StdioServerParameters:
+    """
+    Build MCP server parameters.
+
+    If filesystem_root is provided, the MCP server starts with that root.
+    Otherwise it uses the default media root.
+    """
+    root = filesystem_root or str(MCP_ROOT)
+
+    return StdioServerParameters(
+        command=sys.executable,
+        args=[
+            "-m",
+            "mcp_server.server",
+        ],
+        env={
+            **os.environ,
+            "PYTHONPATH": str(settings.BASE_DIR),
+            "MCP_FILESYSTEM_ROOT": root,
+            "DJANGO_SETTINGS_MODULE": os.environ.get(
+                "DJANGO_SETTINGS_MODULE",
+                "config.settings",
+            ),
+        },
+    )
 
 
 # The tools below are wrappers around the tools exposed by the custom MCP filesystem server
 # _call_custom_tool is a helper function that connects to the MCP server and calls a tool with the given arguments, returning the raw result from the MCP server
-async def _call_custom_tool(tool_name: str, arguments: dict):
+async def _call_custom_tool(tool_name: str, arguments: dict, filesystem_root: str | None = None): 
     """Call one tool on the custom Python MCP server."""
 
-    async with stdio_client(custom_server_params) as (read_stream, write_stream):
+    server_params = build_custom_server_params(filesystem_root)
+
+    async with stdio_client(server_params) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             return await session.call_tool(tool_name, arguments)
@@ -45,7 +56,9 @@ async def _call_custom_tool(tool_name: str, arguments: dict):
 async def _list_custom_tools():
     """List tools exposed by the custom Python MCP server."""
 
-    async with stdio_client(custom_server_params) as (read_stream, write_stream):
+    server_params = build_custom_server_params()
+
+    async with stdio_client(server_params) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             return await session.list_tools()
@@ -75,10 +88,10 @@ def _extract_text(result) -> str:
     return ""
 
 
-def call_custom_mcp_tool(tool_name: str, arguments: dict) -> str:
+def call_custom_mcp_tool(tool_name: str, arguments: dict, filesystem_root: str | None = None) -> str:
     """Call one tool on the custom Python MCP server."""
 
-    result = asyncio.run(_call_custom_tool(tool_name, arguments))
+    result = asyncio.run(_call_custom_tool(tool_name, arguments, filesystem_root))
     return _extract_text(result)
 
 
