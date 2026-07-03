@@ -7,6 +7,7 @@ updated independently.
 """
 
 import shutil
+import sys
 from pathlib import Path
 from uuid import uuid4
 
@@ -29,6 +30,8 @@ def build_mcp_path(path: str = "") -> Path:
         target.relative_to(root)
     # Otherwise if the path is outside the MCP root raise an error
     except ValueError:
+        # --- DEBUGGING ---
+        print(f"[SECURITY][MCP ROOT] Blocked path={path!r} outside root={root}", file=sys.stderr)
         raise ValueError("Path is outside MCP root.")
 
     return target
@@ -41,8 +44,11 @@ def to_mcp_relative(path: Path) -> str:
     When MCP_ROOT is /project/media/users/10
     /project/media/users/10/a.txt -> a.txt
     """
-    # 
-    return path.resolve().relative_to(MCP_ROOT).as_posix()
+    try:
+        return path.resolve().relative_to(MCP_ROOT).as_posix()
+    except ValueError:
+        print(f"[SECURITY][MCP ROOT] Blocked resolved path={path.resolve()} outside root={MCP_ROOT}", file=sys.stderr)
+        raise ValueError("Path is outside MCP root.")
 
 
 def list_files_impl(path: str) -> str:

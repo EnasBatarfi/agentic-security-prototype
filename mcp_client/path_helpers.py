@@ -127,12 +127,16 @@ def resolve_user_file_path(path: str, user_id: int | str, *,allow_root: bool = T
     """
 
     if user_id is None:
+        # --- DEBUGGING ---
+        print(f"[SECURITY][PATH HELPER] Blocked path={path!r}: missing user ID")
         return None
 
     normalized_path = normalize_user_file_path(path, allow_root=allow_root)
 
     # If the path is None, return invalid msg. It means invalid path for any of the reasons above
     if normalized_path is None:
+        # --- DEBUGGING ---
+        print(f"[SECURITY][PATH HELPER] Blocked path={path!r}: invalid path syntax")
         return None
 
     # Get the root folder for the user
@@ -151,6 +155,8 @@ def resolve_user_file_path(path: str, user_id: int | str, *,allow_root: bool = T
     if parts[0] == "users":
         # If the length is less than 2 or the second part is not the user_id, return invalid msg. 
         if len(parts) < 2 or parts[1] != str(user_id):
+            # --- DEBUGGING ---
+            print(f"[SECURITY][PATH HELPER] Blocked path={path!r}: path belongs to another user")
             return None
 
         # If the length more than 2 and the second part is the user_id:
@@ -162,6 +168,8 @@ def resolve_user_file_path(path: str, user_id: int | str, *,allow_root: bool = T
             # If allow_root is True, return the user root folder
             if allow_root:
                 return user_root, "."
+            # --- DEBUGGING ---
+            print(f"[SECURITY][PATH HELPER] Blocked path={path!r}: root path is not allowed")
             return None
 
         mcp_path = PurePosixPath(*remaining_parts).as_posix()

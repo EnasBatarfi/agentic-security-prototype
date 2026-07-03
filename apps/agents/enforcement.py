@@ -233,6 +233,8 @@ def authorize_tool_invocation(user: Any, context: str, tool_name: str, args: dic
 
     # If the decision is not allowed, deny the tool call
     if not decision.allowed:
+        # --- DEBUGGING ---
+        print(f"[SECURITY][ENFORCEMENT] Blocked action={request.action!r} for principal={request.principal.id!r}: {decision.code}")
         return ToolCallAuthorization(
             allowed=False,
             safe_args={},
