@@ -36,5 +36,8 @@ def resolve_project_path(value: str) -> Path:
 
 
 # Filesystem root used by the MCP server
-# This can be passed from Django through the MCP_FILESYSTEM_ROOT environment variable
+# This can be passed from Django through the MCP_FILESYSTEM_ROOT environment variable from client 
 MCP_ROOT = resolve_project_path(os.getenv("MCP_FILESYSTEM_ROOT", "media"))
+
+# Filesystem root for deleted files
+MCP_DELETED_ROOT = resolve_project_path(os.getenv("MCP_DELETED_ROOT",str(MCP_ROOT / "_deleted"),))

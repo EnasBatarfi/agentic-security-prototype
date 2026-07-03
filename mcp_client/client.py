@@ -32,6 +32,7 @@ def build_custom_server_params(filesystem_root: str | None = None) -> StdioServe
             **os.environ,
             "PYTHONPATH": str(settings.BASE_DIR),
             "MCP_FILESYSTEM_ROOT": root,
+            "MCP_DELETED_ROOT": str(MCP_ROOT / "_deleted"),
             "DJANGO_SETTINGS_MODULE": os.environ.get(
                 "DJANGO_SETTINGS_MODULE",
                 "config.settings",

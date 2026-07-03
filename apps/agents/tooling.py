@@ -79,7 +79,7 @@ def get_tools_for_context(user: Any, context: str):
     allowed_tools = []
 
     # Each available MCP tool is checked against the policy engine before it is bound to the model
-    for tool in get_tools():
+    for tool in get_tools(principal.id):
         if can_expose_tool(principal, context, tool.name):
             allowed_tools.append(tool)
 

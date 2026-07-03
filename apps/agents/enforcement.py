@@ -20,6 +20,8 @@ from apps.authorization.types import AuthorizationRequest, Decision, Principal, 
 from apps.files.models import UploadedFile
 from apps.agents.tooling import principal_from_user
 
+from mcp_client.path_helpers import resolve_user_file_path
+
 # This class is used to return the result of authorizing a tool call, including whether it is allowed, any safe arguments to use for the tool call, and a message explaining the decision
 @dataclass(frozen=True)
 class ToolCallAuthorization:
@@ -56,7 +58,7 @@ def file_collection_resource(principal: Principal) -> Resource:
     )
 
 
-def file_resource(args: dict[str, Any]) -> Resource:
+def file_resource(principal: Principal, args: dict[str, Any]) -> Resource:
     """
     Build a file resource from a trusted UploadedFile database record.
 
@@ -66,7 +68,13 @@ def file_resource(args: dict[str, Any]) -> Resource:
 
     # Find the database record using the provided path
     path = str(args.get("path", "")).strip()
-    uploaded_file = UploadedFile.objects.filter(file=path).first()
+    resolved = resolve_user_file_path(path, principal.id, allow_root=False)
+
+    if resolved is None:
+        return Resource(type=RESOURCE_FILE)
+
+    database_path, _mcp_path = resolved
+    uploaded_file = UploadedFile.objects.filter(file=database_path).first()
 
     # If no database record was found return an unknown resource
     if uploaded_file is None:
@@ -151,7 +159,7 @@ def resource_for_tool_call(principal: Principal, tool_name: str, args: dict[str,
 
     # if the tool is one that operates on a specific file, return a file resource
     if tool_name in {TOOL_READ_FILE, TOOL_DELETE_FILE}:
-        return file_resource(args)
+        return file_resource(principal, args)
 
     # if the tool is one that operates on a user account, return an account resource
     if tool_name == TOOL_SEND_PASSWORD_RESET_EMAIL:

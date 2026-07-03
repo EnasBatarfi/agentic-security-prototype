@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
-from ..config import MCP_ROOT
+from ..config import MCP_ROOT, MCP_DELETED_ROOT
 
 
 def build_mcp_path(path: str = "") -> Path:
@@ -127,7 +127,7 @@ def delete_file_impl(path: str) -> str:
     if source == MCP_ROOT.resolve():
         raise ValueError("Cannot delete MCP root.")
 
-    deleted_root = MCP_ROOT / "_deleted"
+    deleted_root = MCP_DELETED_ROOT
     deleted_root.mkdir(exist_ok=True)
 
     destination = deleted_root / f"{uuid4().hex}_{source.name}"
