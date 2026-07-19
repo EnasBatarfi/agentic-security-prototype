@@ -191,7 +191,7 @@ def safe_args_for_tool_call(tool_name: str, args: dict[str, Any], resource: Reso
 
         # If the stored_path attribute is present, return it as the safe argument
         if stored_path:
-            return {**args,"path": stored_path,}
+            return {"path": stored_path,}
 
     # Otherwise, return the original arguments bc the tool does not require any special handling for safe arguments
     return dict(args)

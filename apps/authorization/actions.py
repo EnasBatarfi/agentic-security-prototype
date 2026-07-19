@@ -19,9 +19,14 @@ PROFILE_CONTEXT = "profile"
 
 
 # Resource types used to define the resource of an authorization request
+
+# Used when the protected thing is the tool itself, usually for tool exposure.
 RESOURCE_TOOL = "tool"
+# Used when the protected thing is a collection of files, such as listing or searching inside a user's file collection
 RESOURCE_FILE_COLLECTION = "file_collection"
+# Used when the protected thing is a specific file
 RESOURCE_FILE = "file"
+# Used when the protected thing is a user account
 RESOURCE_ACCOUNT = "account"
 
 

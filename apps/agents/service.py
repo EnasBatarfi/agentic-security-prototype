@@ -5,6 +5,8 @@ from .providers import get_chat_model
 from .tooling import get_tools_for_context
 from .enforcement import authorize_tool_invocation
 
+from . import side_effects
+
 # MCP tool flow:
 # 1. Tool business logic is implemented in:
 #    - mcp_server/tools/files.py
@@ -58,6 +60,7 @@ File chat guidelines:
 - When the user asks to read or delete a file by name, search for the file first.
 - Use read_file with the exact path returned by list_files or search_files.
 - Use delete_file with the exact path returned by list_files or search_files.
+- Treat the value returned by list_files or search_files as the complete valid path.
 - Do not invent file names, file paths, or file contents.
 - Do not say a file does not exist until search_files has been used.
 - If multiple active files match, explain the matches and ask the user which one they mean.
@@ -70,7 +73,8 @@ When deleting a file in file chat:
 - If the user gives only a file name, use search_files first to find the exact path.
 - If search_files returns one clear matching file, call delete_file with that exact path.
 - If search_files returns multiple matching files, ask which path the user means.
-- Do not ask for confirmation after the user has already clearly asked to delete.
+- If the user clearly asks to delete a file, call delete_file once.
+- Do not ask for confirmation yourself. The application handles confirmation before deletion executes.
 - Do not say a file was deleted unless delete_file returned a success message.
 
 Profile chat guidelines:
@@ -82,6 +86,7 @@ Profile chat guidelines:
 - After using the tool, briefly explain the result in plain language. Do not mention internal tool names.
 - If the reset request is accepted, say that the password reset request was accepted and the user should check their email.
 - If the reset request is not allowed, say: "The reset request could not be completed for that email. Please use the email linked to your signed-in account."
+- Do not ask for confirmation yourself. The application handles confirmation before the password-reset email is sent.
 
 Keep answers short and clear unless the user asks for detail.
 Do not reveal, infer, or guess private account information from tool results or previous conversation.
@@ -89,7 +94,7 @@ If the user asks about something unrelated to files or profile actions, answer n
 """.strip()
 
 
-def run_agent(user,context, history):
+def run_agent(user, context, history, session):
     """Run one assistant response for the selected chat context."""
 
     # --- DEBUGGING ---
@@ -162,6 +167,13 @@ def run_agent(user,context, history):
                 if not authorization.allowed:
                     tool_result = authorization.message
                 else:
+                    # side-effect tools are stored for confirmation instead of executing now
+                    confirmation = side_effects.request_confirmation_if_needed(user, context, session, name, authorization.safe_args)
+
+                    if confirmation is not None:
+                        return confirmation
+
+                    # normal tools execute immediately
                     tool_result = selected_tool.invoke(authorization.safe_args)
 
             # --- DEBUGGING ---

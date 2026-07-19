@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
+from apps.agents import side_effects
 from apps.agents.service import run_agent
 
 from .models import ChatMessage
@@ -42,17 +43,21 @@ def chat_page(request, context, template_name):
                 content=text,
             )
 
-            # Get the last 10 messages in this context to provide as history for the agent
-            history = list(
-                ChatMessage.objects.filter(
-                    user=request.user,
-                    context=context,
-                ).order_by("-created_at")[:10]
-            )
-            history.reverse()
+            # handle CONFIRM or CANCEL before sending anything to the LLM
+            answer = side_effects.handle_confirmation_message(request.user, context, request.session, text)
 
-            # Call the agent with the context and message history to get a response
-            answer = run_agent(user=request.user, context=context, history=history)
+            # normal messages continue to the agent
+            if answer is None:
+                # Get the last 10 messages in this context to provide as history for the agent
+                history = list(
+                    ChatMessage.objects.filter(
+                        user=request.user,
+                        context=context,
+                    ).order_by("-created_at")[:10]
+                )
+                history.reverse()
+
+                answer = run_agent(request.user, context, history, request.session)
 
             # Save the agent's response to the database
             ChatMessage.objects.create(
