@@ -23,7 +23,20 @@ def audit_decision(request: AuthorizationRequest, decision: Decision) -> None:
 
     # Log the decision for debugging later
     logger.info(
-        "authorization_decision",
+        (
+            f"authorization_decision "
+            f"principal={request.principal.id} "
+            f"action={request.action} "
+            f"resource_type={request.resource.type} "
+            f"resource_id={request.resource.id} "
+            f"resource_owner={request.resource.owner_id} "
+            f"context={request.context.name} "
+            f"tool={request.context.tool} "
+            f"allowed={decision.allowed} "
+            f"reason={decision.reason} "
+            f"code={decision.code} "
+            f"policies={decision.policy_ids}"
+        ),
         extra={
             "principal_id": request.principal.id,
             "action": request.action,

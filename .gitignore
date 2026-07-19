@@ -32,3 +32,6 @@ apps/authorization/readme.txt
 
 # private notes
 progress_before_break.md
+
+# Runtime authorization audit logs
+authorization.log*

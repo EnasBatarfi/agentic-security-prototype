@@ -164,3 +164,31 @@ MAX_TOOL_STEPS = int(os.getenv("MAX_TOOL_STEPS", "5"))
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR / "tmp" / "emails"
 DEFAULT_FROM_EMAIL = "noreply@example.com"
+
+# Save authorization audit logs with file rotation
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "{asctime} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "authorization_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(BASE_DIR / "authorization.log"),
+            "maxBytes": 1_000_000,
+            "backupCount": 3,
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "authorization": {
+            "handlers": ["authorization_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

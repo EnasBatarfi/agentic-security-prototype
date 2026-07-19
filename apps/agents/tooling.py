@@ -10,6 +10,7 @@ The policy decision is made by the application authorization engine.
 from typing import Any
 
 from apps.authorization.actions import RESOURCE_TOOL, TOOL_EXPOSE
+from apps.authorization.audit import audit_decision
 from apps.authorization.engine import authorize
 from apps.authorization.types import AuthorizationRequest, Principal, RequestContext, Resource
 from mcp_client.tools import get_tools
@@ -64,6 +65,10 @@ def can_expose_tool(principal: Principal, context: str, tool_name: str) -> bool:
 
     # Ask the policy decision engine to make the decision (PDP)
     decision = authorize(request)
+
+    # Log the tool exposure decision
+    audit_decision(request, decision)
+
     return decision.allowed
 
 
