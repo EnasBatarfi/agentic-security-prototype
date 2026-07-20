@@ -1,10 +1,10 @@
-"""Check policy-based tool exposure before tools are given to the LLM."""
+"""Check policy-based tool exposure before tools are given to the LLM (Tool Exposure Enforcement)."""
 
 from types import SimpleNamespace
 
 from apps.agents import tooling
 from apps.agents.tooling import can_expose_tool, get_tools_for_context, principal_from_user
-from apps.authorization.actions import FILE_CONTEXT, PROFILE_CONTEXT
+from apps.authorization.actions import FILE_CONTEXT, PROFILE_CONTEXT, TOOL_EXPOSE, TOOL_READ_FILE
 from apps.authorization.types import Principal
 
 
@@ -122,7 +122,7 @@ def test_filter_removes_unknown_tools(monkeypatch):
     """Check that an unknown registered tool is removed from the final list."""
 
     unknown_tool = SimpleNamespace(name="unknown_tool")
-    monkeypatch.setattr(tooling, "get_tools", lambda: [unknown_tool])
+    monkeypatch.setattr(tooling, "get_tools", lambda _user_id: [unknown_tool])
 
     assert get_tools_for_context(user(), FILE_CONTEXT) == []
     assert get_tools_for_context(user(), PROFILE_CONTEXT) == []
@@ -136,3 +136,31 @@ def test_tools_are_not_exposed_in_wrong_context():
     assert can_expose_tool(principal, FILE_CONTEXT, "send_password_reset_email") is False
     assert can_expose_tool(principal, PROFILE_CONTEXT, "read_file") is False
     assert can_expose_tool(principal, PROFILE_CONTEXT, "delete_file") is False
+
+
+def test_tool_exposure_decision_is_audited(monkeypatch):
+    """Check that PEP 1 audits its tool-exposure decision."""
+
+    principal = principal_from_user(user())
+    audited = []
+
+    monkeypatch.setattr(
+        tooling,
+        "audit_decision",
+        lambda request, decision: audited.append((request, decision)),
+    )
+
+    allowed = can_expose_tool(principal, FILE_CONTEXT, TOOL_READ_FILE)
+
+    assert allowed is True
+    assert len(audited) == 1
+
+    request, decision = audited[0]
+
+    assert request.principal == principal
+    assert request.action == TOOL_EXPOSE
+    assert request.resource.id == TOOL_READ_FILE
+    assert request.context.name == FILE_CONTEXT
+    assert request.context.tool == TOOL_READ_FILE
+    assert allowed == decision.allowed
+    assert decision.code == "allowed"
