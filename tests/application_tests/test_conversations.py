@@ -10,7 +10,7 @@ def test_chat_saves_user_and_assistant_messages(client, alice, monkeypatch):
     """Check that chat saves user and assistant messages."""
     monkeypatch.setattr(
         "apps.conversations.views.run_agent",
-        lambda context, history: "Assistant answer",
+        lambda user, context, history, session: "Assistant answer",
     )
     client.force_login(alice)
 

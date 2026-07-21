@@ -205,22 +205,23 @@ def bob(user_factory):
 
 @pytest.fixture
 def isolated_storage(tmp_path, settings, monkeypatch):
-    """Point Django and MCP file operations at temporary storage."""
+    """Point Django and MCP file operations at isolated temporary storage."""
 
     root = tmp_path / "media"
+    deleted_root = root / "_deleted"
+
     root.mkdir()
+    deleted_root.mkdir()
+
     settings.MEDIA_ROOT = root
     settings.MCP_FILESYSTEM_ROOT = root
+    settings.MCP_DELETED_ROOT = deleted_root
 
     from mcp_server.tools import files as file_tools
 
     monkeypatch.setattr(file_tools, "MCP_ROOT", root)
+    monkeypatch.setattr(file_tools, "MCP_DELETED_ROOT", deleted_root)
 
-    from mcp_client import client
-
-    env = dict(client.custom_server_params.env or {})
-    env["MCP_FILESYSTEM_ROOT"] = str(root)
-    monkeypatch.setattr(client.custom_server_params, "env", env)
     return root
 
 

@@ -34,40 +34,82 @@ def test_mcp_text_extraction_handles_supported_result_shapes():
 
 
 def test_file_wrappers_call_expected_mcp_tools(monkeypatch):
-    """Check that file wrappers call expected mcp tools."""
+    """Check that file wrappers use scoped roots and MCP-relative paths."""
+
     calls = []
+
+    monkeypatch.setattr(
+        tools,
+        "user_mcp_root",
+        lambda user_id: f"/scoped/users/{user_id}",
+    )
     monkeypatch.setattr(
         tools,
         "call_custom_mcp_tool",
-        lambda name, arguments: calls.append((name, arguments)) or "ok",
+        lambda name, arguments, filesystem_root=None: (
+            calls.append((name, arguments, filesystem_root)) or "ok"
+        ),
     )
 
-    assert tools.list_files("users/1") == "ok"
-    assert tools.search_files("notes") == "ok"
-    assert tools.read_file("users/1/note.txt") == "ok"
+    assert tools.list_files("users/1", user_id=1) == "ok"
+    assert tools.search_files("notes", user_id=1) == "ok"
+    assert tools.read_file("users/1/note.txt", user_id=1) == "ok"
+
     assert calls == [
-        ("list_files", {"path": "users/1"}),
-        ("search_files", {"query": "notes"}),
-        ("read_file", {"path": "users/1/note.txt"}),
+        (
+            "list_files",
+            {"path": "."},
+            "/scoped/users/1",
+        ),
+        (
+            "search_files",
+            {
+                "path": ".",
+                "query": "notes",
+            },
+            "/scoped/users/1",
+        ),
+        (
+            "read_file",
+            {"path": "note.txt"},
+            "/scoped/users/1",
+        ),
     ]
 
 
 @pytest.mark.django_db
 def test_delete_wrapper_removes_matching_database_record(monkeypatch, alice, isolated_storage):
-    """Check that delete wrapper removes matching database record."""
+    """Check that delete uses trusted identity and removes its DB record."""
+
     upload = UploadedFile.objects.create(
         owner=alice,
         title="note",
         file=f"users/{alice.pk}/note.txt",
     )
+    calls = []
+
     monkeypatch.setattr(
         tools,
         "call_custom_mcp_tool",
-        lambda name, arguments: f"Deleted users/{alice.pk}/note.txt",
+        lambda name, arguments, filesystem_root=None: (
+            calls.append((name, arguments, filesystem_root))
+            or "Deleted note.txt"
+        ),
     )
 
-    tools.delete_file(f"users/{alice.pk}/note.txt")
+    result = tools.delete_file(
+        f"users/{alice.pk}/note.txt",
+        user_id=alice.pk,
+    )
 
+    assert result == "Deleted note.txt"
+    assert calls == [
+        (
+            "delete_file",
+            {"path": "note.txt"},
+            str(isolated_storage / "users" / str(alice.pk)),
+        )
+    ]
     assert not UploadedFile.objects.filter(pk=upload.pk).exists()
 
 
@@ -85,12 +127,17 @@ def test_mcp_server_exposes_expected_tools(isolated_storage):
 
 @pytest.mark.integration
 def test_mcp_round_trip_reads_file(make_file):
-    """Check that MCP round trip reads file."""
-    make_file("users/1/mcp-note.txt", "MCP-ROUND-TRIP")
+    """Check that MCP reads through a user-scoped filesystem root."""
+
+    note = make_file(
+        "users/1/mcp-note.txt",
+        "MCP-ROUND-TRIP",
+    )
 
     result = call_custom_mcp_tool(
         "read_file",
-        {"path": "users/1/mcp-note.txt"},
+        {"path": note.name},
+        filesystem_root=str(note.parent),
     )
 
     assert result == "MCP-ROUND-TRIP"
