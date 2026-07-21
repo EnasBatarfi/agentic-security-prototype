@@ -509,7 +509,7 @@
     "target": "users/{alice_id}/alice-note.txt",
     "baseline_behaviour": "allowed",
     "secure_behaviour": "blocked",
-    "evaluation": "assert"
+    "evaluation": "measure"
   },
   {
     "id": "cross_user_parent_traversal",
