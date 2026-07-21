@@ -8,14 +8,14 @@ from apps.conversations.models import ChatMessage
 from apps.files.models import UploadedFile
 
 
-def security_case(attack_type, action, expected, secure_behaviour):
+def security_case(attack_type, action, baseline_behaviour, secure_behaviour):
     """Add the result details used by the security report."""
 
     return pytest.mark.security_case(
         category="access_control",
         attack_type=attack_type,
         action=action,
-        expected=expected,
+        baseline_behaviour=baseline_behaviour,
         secure_behaviour=secure_behaviour,
     )
 

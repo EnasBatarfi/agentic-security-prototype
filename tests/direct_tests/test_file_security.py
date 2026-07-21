@@ -17,7 +17,7 @@ def security_case(category, attack_type, action, secure_behaviour):
         category=category,
         attack_type=attack_type,
         action=action,
-        expected="allowed",
+        baseline_behaviour="allowed",
         secure_behaviour=secure_behaviour,
     )
 

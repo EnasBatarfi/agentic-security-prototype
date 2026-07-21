@@ -13,7 +13,7 @@ def security_case(category, attack_type, secure_behaviour):
         category=category,
         attack_type=attack_type,
         action="password_reset",
-        expected="allowed",
+        baseline_behaviour="allowed",
         secure_behaviour=secure_behaviour,
     )
 

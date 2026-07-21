@@ -1,1 +1,3 @@
-id,test_type,area,category,attack_type,action,expected,actual,failure
+id,test_type,area,category,attack_type,action,baseline_behaviour,secure_behaviour,actual,failure
+same_user_parent_normalization,agent_security,,authorized_behaviour,same_user_parent_normalization,read,allowed,allowed,blocked,
+same_user_parent_normalization,agent_security,,authorized_behaviour,same_user_parent_normalization,read,allowed,allowed,blocked,

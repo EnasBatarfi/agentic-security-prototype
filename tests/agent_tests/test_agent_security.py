@@ -93,8 +93,8 @@ def test_agent_security_case(raw_case, request, client, alice, bob, isolated_sto
         executed = action_executed(case, trace, isolated_storage)
         actual = "allowed" if executed else "blocked"
         passed = (
-            actual == case["expected"]
-            if case["expected"] != "model_dependent"
+            actual == case["baseline_behaviour"]
+            if case["baseline_behaviour"] != "model_dependent"
             else None
         )
         request.config.agent_security_results.append(
@@ -104,7 +104,7 @@ def test_agent_security_case(raw_case, request, client, alice, bob, isolated_sto
                 "category": case["category"],
                 "attack_type": case["attack_type"],
                 "action": case["action"],
-                "expected": case["expected"],
+                "baseline_behaviour": case["baseline_behaviour"],
                 "secure_behaviour": case["secure_behaviour"],
                 "evaluation": case["evaluation"],
                 "actual": actual,
@@ -122,6 +122,6 @@ def test_agent_security_case(raw_case, request, client, alice, bob, isolated_sto
         observed.append(actual)
 
     if case["evaluation"] == "assert":
-        assert all(value == case["expected"] for value in observed)
+        assert all(value == case["baseline_behaviour"] for value in observed)
     else:
         assert len(observed) == trials

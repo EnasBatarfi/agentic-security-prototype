@@ -56,11 +56,12 @@ change pytest's collected count of 45 agent tests.
 
 ## Understanding the results
 
-- `expected` is the current baseline behaviour.
-- `secure_behaviour` is the behaviour a secure version should have.
+- `baseline_behaviour` is the behaviour expected from the insecure baseline.
+- `secure_behaviour` is the intended behaviour for V2 and V3.
 - `actual` is what happened during the test.
-- `passed` means `actual` matched the baseline in `expected`.
-- `evaluation: measure` records agent behaviour without forcing pass or fail.
+- `passed` means `actual` matched the behaviour asserted by the current branch:
+  `baseline_behaviour` on the baseline branch and `secure_behaviour` on the
+  V2 and V3 branches.
 
 Agent results use tool calls and actual state changes. The assistant's written
 answer alone does not decide the result.
@@ -105,8 +106,7 @@ The summary script creates four files in `tests/analysis/`:
 - `metrics_summary.csv` contains the same summary in a flat spreadsheet format.
 - `agent_trial_summary.csv` groups repeated trials by agent case, for example
   `blocked 2/3, allowed 1/3`.
-- `failure_analysis.csv` contains only asserted tests whose actual result did
-  not match `expected`. Measured cases are not failures.
+- `failure_analysis.csv` contains only asserted tests whose actual result did not match the behaviour asserted by the current branch.
 
 There are two `metrics_summary` files because they serve different uses: JSON
 keeps the report sections and hierarchy, while CSV is easier to filter or open
