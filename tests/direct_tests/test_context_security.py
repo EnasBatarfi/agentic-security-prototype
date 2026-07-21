@@ -8,14 +8,14 @@ from apps.conversations.models import ChatMessage
 from apps.files.models import UploadedFile
 
 
-def security_case(attack_type, action, expected, secure_behaviour):
+def security_case(attack_type, action, baseline_behaviour, secure_behaviour):
     """Add the result details used by the security report."""
 
     return pytest.mark.security_case(
         category="access_control",
         attack_type=attack_type,
         action=action,
-        expected=expected,
+        baseline_behaviour=baseline_behaviour,
         secure_behaviour=secure_behaviour,
     )
 
@@ -26,46 +26,46 @@ def security_case(attack_type, action, expected, secure_behaviour):
     "allowed",
     "blocked",
 )
-def test_password_reset_is_exposed_in_file_context():
+def test_password_reset_is_exposed_in_file_context(alice):
     """Check whether file chat exposes password reset."""
     names = {
-        tool.name for tool in get_tools_for_context(ChatMessage.Context.FILE)
+        tool.name for tool in get_tools_for_context(alice, ChatMessage.Context.FILE)
     }
 
-    assert "send_password_reset_email" in names
+    assert "send_password_reset_email" not in names
 
 
-def profile_tools():
+def profile_tools(user):
     """Return the tool names currently available in profile chat."""
 
     names = {
-        tool.name for tool in get_tools_for_context(ChatMessage.Context.PROFILE)
+        tool.name for tool in get_tools_for_context(user, ChatMessage.Context.PROFILE)
     }
     return names
 
 
 @security_case("cross_context_list", "list", "allowed", "blocked")
-def test_list_is_exposed_in_profile_context():
+def test_list_is_exposed_in_profile_context(alice):
     """Check whether profile chat exposes file listing."""
-    assert "list_files" in profile_tools()
+    assert "list_files" not in profile_tools(alice)
 
 
 @security_case("cross_context_search", "search", "allowed", "blocked")
-def test_search_is_exposed_in_profile_context():
+def test_search_is_exposed_in_profile_context(alice):
     """Check whether profile chat exposes file search."""
-    assert "search_files" in profile_tools()
+    assert "search_files" not in profile_tools(alice)
 
 
 @security_case("cross_context_read", "read", "allowed", "blocked")
-def test_read_is_exposed_in_profile_context():
+def test_read_is_exposed_in_profile_context(alice):
     """Check whether profile chat exposes file reading."""
-    assert "read_file" in profile_tools()
+    assert "read_file" not in profile_tools(alice)
 
 
 @security_case("cross_context_delete", "delete", "allowed", "blocked")
-def test_delete_is_exposed_in_profile_context():
+def test_delete_is_exposed_in_profile_context(alice):
     """Check whether profile chat exposes file deletion."""
-    assert "delete_file" in profile_tools()
+    assert "delete_file" not in profile_tools(alice)
 
 
 @security_case("cross_user_ui_delete", "delete", "blocked", "blocked")
@@ -111,9 +111,11 @@ def test_chat_history_is_isolated_by_user_and_context(client, alice, bob, monkey
     )
     captured = {}
 
-    def agent(context, history):
+    def agent(user, context, history, session):
         """Capture the history passed into the agent."""
 
+        captured["user"] = user
+        captured["context"] = context
         captured["history"] = history
         return "done"
 
@@ -121,6 +123,8 @@ def test_chat_history_is_isolated_by_user_and_context(client, alice, bob, monkey
     client.force_login(alice)
 
     client.post(reverse("file_chat"), {"message": "hello"})
+    assert captured["user"] == alice
+    assert captured["context"] == ChatMessage.Context.FILE
 
     contents = [message.content for message in captured["history"]]
     assert "bob-secret" not in contents

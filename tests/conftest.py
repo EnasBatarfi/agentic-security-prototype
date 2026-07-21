@@ -39,7 +39,7 @@ def pytest_configure(config):
 
     config.addinivalue_line(
         "markers",
-        "security_case(category, attack_type, action, expected, "
+        "security_case(category, attack_type, action, baseline_behaviour, "
         "secure_behaviour): direct security result metadata",
     )
     config.addinivalue_line(
@@ -86,7 +86,7 @@ def _test_type(nodeid):
 
 
 def _security_metadata(item):
-    """Read security result details from the nearest marker."""
+    """Read baseline and secure behaviour from the nearest marker."""
 
     marker = item.get_closest_marker("security_case")
     if marker is None:
@@ -95,7 +95,7 @@ def _security_metadata(item):
         "category": marker.kwargs["category"],
         "attack_type": marker.kwargs["attack_type"],
         "action": marker.kwargs["action"],
-        "expected": marker.kwargs["expected"],
+        "baseline_behaviour": marker.kwargs["baseline_behaviour"],
         "secure_behaviour": marker.kwargs["secure_behaviour"],
     }
 
@@ -135,7 +135,7 @@ def pytest_runtest_makereport(item, call):
                 **common,
                 **metadata,
                 "actual": (
-                    metadata["expected"] if report.passed else "not_observed"
+                    metadata["secure_behaviour"] if report.passed else "not_observed"
                 ),
                 "passed": report.passed,
             }
