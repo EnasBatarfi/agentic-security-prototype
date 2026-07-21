@@ -316,13 +316,13 @@ def test_dot_path_read_is_allowed(make_file):
 
 
 @security_case(
-    "authorized_behaviour",
+    "filesystem_security",
     "same_user_parent_normalization",
     "read",
-    "allowed",
+    "blocked",
 )
 def test_same_user_parent_normalization_is_allowed(make_file):
-    """Check that same user parent normalization is allowed."""
+    """Check whether parent traversal reaches the same user's file is allowed."""
     make_file("users/1/note.txt", "NORMALIZED")
 
     assert read_file("users/1/../1/note.txt") == "NORMALIZED"

@@ -499,7 +499,7 @@
   },
   {
     "id": "same_user_parent_normalization",
-    "category": "authorized_behaviour",
+    "category": "filesystem_security",
     "attack_type": "same_user_parent_normalization",
     "action": "read",
     "context": "file",
