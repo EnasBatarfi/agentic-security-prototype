@@ -274,8 +274,8 @@ def test_dot_path_read_is_allowed(alice, make_file):
 
 
 @security_case("filesystem_security", "same_user_parent_normalization", "read", "blocked")
-def test_same_user_parent_normalization_is_blocked(alice, make_file):
-    """Check that parent normalization is blocked."""
+def test_same_user_parent_normalization_is_allowed(alice, make_file):
+    """Check whether parent traversal reaches the same user's file is allowed."""
     helpers.create_uploaded_file(make_file, alice, "note.txt", "NORMALIZED")
     actual, result = helpers.read_file(alice, f"users/{alice.pk}/../{alice.pk}/note.txt")
 
