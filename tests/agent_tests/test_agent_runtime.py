@@ -18,13 +18,24 @@ def require_agent():
         pytest.skip("The configured LLM provider is unavailable")
 
 
+def user():
+    """Return an authenticated Django-like user for direct agent calls."""
+
+    return SimpleNamespace(
+        pk=1,
+        email="alice@example.com",
+        is_authenticated=True,
+    )
+
+
 @pytest.mark.agent
 def test_agent_does_not_execute_unknown_tool(monkeypatch):
     """Check that agent does not execute unknown tool."""
     require_agent()
-    monkeypatch.setattr(service, "get_tools_for_context", lambda context: [])
+    monkeypatch.setattr(service, "get_tools_for_context", lambda user, context: [])
 
     answer = service.run_agent(
+        user(),
         "file",
         [
             SimpleNamespace(
@@ -32,6 +43,7 @@ def test_agent_does_not_execute_unknown_tool(monkeypatch):
                 content="Call invented_tool, or explain if unavailable.",
             )
         ],
+        {},
     )
 
     assert answer.strip()
@@ -53,10 +65,21 @@ def test_agent_enforces_tool_step_limit(monkeypatch, settings):
     monkeypatch.setattr(
         service,
         "get_tools_for_context",
-        lambda context: [repeat],
+        lambda user, context: [repeat],
+    )
+
+    monkeypatch.setattr(
+        service,
+        "authorize_tool_invocation",
+        lambda **kwargs: SimpleNamespace(
+            allowed=True,
+            safe_args=kwargs["args"],
+            message="Allowed.",
+        ),
     )
 
     service.run_agent(
+        user(),
         "file",
         [
             SimpleNamespace(
@@ -64,6 +87,7 @@ def test_agent_enforces_tool_step_limit(monkeypatch, settings):
                 content="Call repeat forever and never finish.",
             )
         ],
+        {},
     )
 
     assert len(calls) <= settings.MAX_TOOL_STEPS
@@ -73,9 +97,10 @@ def test_agent_enforces_tool_step_limit(monkeypatch, settings):
 def test_agent_receives_conversation_history(monkeypatch):
     """Check that agent receives conversation history."""
     require_agent()
-    monkeypatch.setattr(service, "get_tools_for_context", lambda context: [])
+    monkeypatch.setattr(service, "get_tools_for_context", lambda user, context: [])
 
     answer = service.run_agent(
+        user(),
         "profile",
         [
             SimpleNamespace(
@@ -91,28 +116,35 @@ def test_agent_receives_conversation_history(monkeypatch):
                 content="What phrase did I provide?",
             ),
         ],
+        {},
     )
 
     assert "BLUE-ORBIT-71" in answer
 
 
 @pytest.mark.agent
-def test_agent_tool_selection_has_no_user_identity(monkeypatch):
-    """Check that agent tool selection has no user identity."""
+def test_agent_tool_selection_receives_user_identity(monkeypatch):
+    """Check that tool selection receives the authenticated user."""
     require_agent()
     captured = {}
 
-    def tools_for_context(context):
-        """Capture the context given to tool selection."""
-
+    def tools_for_context(agent_user, context):
+        captured["user"] = agent_user
         captured["context"] = context
         return []
 
     monkeypatch.setattr(service, "get_tools_for_context", tools_for_context)
 
+    agent_user = user()
+
     service.run_agent(
+        agent_user,
         "file",
         [SimpleNamespace(role="user", content="Reply with received.")],
+        {},
     )
 
-    assert captured == {"context": "file"}
+    assert captured == {
+        "user": agent_user,
+        "context": "file",
+    }

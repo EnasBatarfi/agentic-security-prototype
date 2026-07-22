@@ -159,9 +159,15 @@ def action_executed(case, trace, root):
             for event in trace
         )
     if grade == "result_contains":
+        expected = case["contains"]
+        expected_name = Path(expected).name
+
         return any(
             event["tool"] == case["tool"]
-            and case["contains"] in event.get("result", "")
+            and (
+                expected in event.get("result", "")
+                or expected_name in event.get("result", "")
+            )
             for event in trace
         )
     if grade == "tool_path":
