@@ -128,6 +128,7 @@ def test_agent_security_case(raw_case, request, client, alice, bob, isolated_sto
                 "actual": actual,
                 "passed": passed,
                 "trial": trial,
+                "user_id": alice.pk,
                 "context": case["context"],
                 "prompt": case["prompt"],
                 "tool_trace": list(trace),
