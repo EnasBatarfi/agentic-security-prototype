@@ -22,10 +22,7 @@ tmp/
 
 # Tests
 file_manager_baseline_test/
-# tests/outputs/
-# tests/analysis/
 tests/notebooks/.ipynb_checkpoints/
-tests/manual_test/
 
 # Local authorization design notes
 apps/authorization/readme.txt
