@@ -19,10 +19,10 @@ def search_files(query: str) -> str:
     return call_custom_mcp_tool("search_files",{"query": query},)
 
 
-def read_file(path: str) -> str:
+def read_file(path: str, user_id: int | str) -> str:
     """Read a file through the custom MCP server."""
 
-    return call_custom_mcp_tool("read_file",{"path": path},)
+    return call_custom_mcp_tool("read_file",{"path": path, "user_id": user_id},)
 
 
 def delete_file(path: str) -> str:
@@ -62,13 +62,6 @@ def search_files_tool(query: str) -> str:
     return search_files(query)
 
 
-@tool("read_file")
-def read_file_tool(path: str) -> str:
-    """Read an uploaded file by path."""
-
-    return read_file(path)
-
-
 @tool("delete_file")
 def delete_file_tool(path: str) -> str:
     """Delete an uploaded file by path."""
@@ -86,8 +79,14 @@ def send_password_reset_email_tool(
     return send_password_reset_email(email, domain, use_https)
 
 
-def get_tools():
+def get_tools(user_id: int | str):
     """Return the tools used by the agent."""
+
+    @tool("read_file")
+    def read_file_tool(path: str) -> str:
+        """Read an uploaded file by path."""
+
+        return read_file(path, user_id)
 
     return [
         list_files_tool,

@@ -37,11 +37,10 @@ def search_files(query: str) -> str:
 
 
 @mcp.tool()
-def read_file(path: str) -> str:
-    """
-    Read a file using the custom MCP server.
-    """
-    return read_file_impl(path)
+def read_file(path: str, user_id: int) -> str:
+    """Read a file using the custom MCP server."""
+
+    return read_file_impl(path, user_id)
 
 
 @mcp.tool()

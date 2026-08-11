@@ -51,8 +51,8 @@ def chat_page(request, context, template_name):
             )
             history.reverse()
 
-            # Call the agent with the context and message history to get a response
-            answer = run_agent(context=context, history=history)
+            # Call the agent with the context, message history, and user to get a response
+            answer = run_agent(context=context, history=history, user=request.user)
 
             # Save the agent's response to the database
             ChatMessage.objects.create(
