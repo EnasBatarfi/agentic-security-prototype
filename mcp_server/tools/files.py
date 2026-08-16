@@ -11,6 +11,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from ..config import MCP_ROOT
+from config.security import system
 
 
 def build_mcp_path(path: str = "") -> Path:
@@ -67,19 +68,19 @@ def search_files_impl(query: str) -> str:
     return "\n".join(str(match) for match in matches)
 
 
-def read_file_impl(path: str) -> str:
+def read_file_impl(path: str, user_id: int | str) -> str:
     """
     Read a text file.
 
     args:
         path: The path to the file to read
+        user_id: The user requesting access to the file
 
     returns:
         The contents of the file
     """
-    target_path = build_mcp_path(path)
 
-    return target_path.read_text(encoding="utf-8")
+    return system.read_text(path, user_id)
 
 
 def delete_file_impl(path: str) -> str:

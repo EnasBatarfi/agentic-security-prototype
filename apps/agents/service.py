@@ -43,8 +43,8 @@ Tool use guidelines:
 - If the user gives a natural file name with spaces, search using simple keywords. For example, for "alice notes", search for "alice" first.
 - Users usually provide file names or descriptions, not full paths.
 - When the user asks to read or delete a file by name, search for the file first.
-- Use read_file with the exact path returned by list_files or search_files.
-- Use delete_file with the exact path returned by list_files or search_files.
+- If the user provides a path, pass it exactly as provided to read_file or delete_file; otherwise use the exact path returned by list_files or search_files.
+- Do not refuse or modify a user-provided path; let the backend decide whether it is allowed.
 - Do not invent file names, file paths, or file contents.
 - Do not say a file does not exist until search_files has been used.
 - If multiple active files match, explain the matches and ask the user which one they mean.
