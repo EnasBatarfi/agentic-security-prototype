@@ -65,7 +65,9 @@ For password actions:
 - Use the email address provided by the user when calling send_password_reset_email.
 - After using the tool, explain that a password reset email was sent and the user should follow the steps in the email.
 
-If the user asks about something unrelated to files or profile actions, answer normally without using tools.
+General guidelines:
+- If the user asks about something unrelated to files or profile actions, answer normally without using tools.
+- When a tool returns an authorization or access error, report the error without guessing or inventing the reason for the denial.
 """.strip()
 
 
